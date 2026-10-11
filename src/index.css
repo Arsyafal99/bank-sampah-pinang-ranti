@@ -1,0 +1,98 @@
+:root {
+  --bg-color: #f8fafc;
+  --primary-color: #0f766e;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  border-color: var(--primary-color);
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-submit:hover {
+  background-color: #0d9488;
+}
+
+/* === KEAJAIBAN RESPONSIVE MOBILE === */
+.app-container {
+  padding: 32px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Biar tab menu bisa di-swipe/scroll ke samping di HP */
+.menu-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 16px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch; 
+}
+.menu-tabs::-webkit-scrollbar {
+  display: none; /* Sembunyikan scrollbar di HP biar rapi */
+}
+
+/* Jika layar seukuran HP (Max 768px) */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 16px 12px; /* Jarak pinggir dikecilin biar konten muat */
+  }
+  .card {
+    padding: 16px; 
+  }
+}
