@@ -1,4 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
+
 import Header from './components/Header';
 import Informasi from './components/Informasi';
 import FormInput from './components/FormInput';
@@ -6,128 +13,507 @@ import Grafik from './components/Grafik';
 import Footer from './components/Footer';
 import TabelData from './components/TabelData';
 import InfoBankSampah from './components/InfoBankSampah';
+
 import './index.css';
 
-function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const WEB_APP_URL =
+  'https://script.google.com/macros/s/AKfycbyPSYQsJAuVhCi5CmAswNy0wEkr94zwxxsgoRXjyNaOccYWlCykS-g7GroBxMlY0NXBeg/exec';
 
-  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyPSYQsJAuVhCi5CmAswNy0wEkr94zwxxsgoRXjyNaOccYWlCykS-g7GroBxMlY0NXBeg/exec';
+const NAMA_BULAN = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
+];
 
-  const [formData, setFormData] = useState({
-    bulan: 'Oktober',
-    tahun: '2026',
+const BULAN_SINGKAT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+  'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des',
+];
+
+const DAFTAR_RW = [
+  'RW 01',
+  'RW 02',
+  'RW 03',
+  'RW 04',
+  'RW 05',
+];
+
+const WARNA_RW = [
+  '#ef4444',
+  '#3b82f6',
+  '#10b981',
+  '#f59e0b',
+  '#8b5cf6',
+];
+
+function buatFormAwal() {
+  const sekarang = new Date();
+
+  return {
+    bulan: NAMA_BULAN[sekarang.getMonth()],
+    tahun: String(sekarang.getFullYear()),
     rw: 'RW 01',
     plastik: '',
     kertas: '',
     logam: '',
     kaca: '',
-  });
+  };
+}
 
-  const [totalSampahKeseluruhan, setTotalSampahKeseluruhan] = useState(0);
-  const [wilayahTeraktif, setWilayahTeraktif] = useState('-');
+function ambilNilai(item, kolom) {
+  for (const nama of kolom) {
+    const nilai = item?.[nama];
 
-  const [dataGrafik, setDataGrafik] = useState({
-    labels: ['RW 01', 'RW 02', 'RW 03', 'RW 04', 'RW 05'],
-    datasets: [{
-      label: 'Total Sampah (Kg) - Akumulasi',
-      data: [0, 0, 0, 0, 0],
-      backgroundColor: '#0f766e', borderRadius: 4, barPercentage: 0.6,
-    }],
-  });
+    if (
+      nilai !== undefined &&
+      nilai !== null &&
+      nilai !== ''
+    ) {
+      return nilai;
+    }
+  }
 
-  const [trenTahunan, setTrenTahunan] = useState({
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'],
-    datasets: [
-      { label: 'RW 01', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], borderColor: '#ef4444', backgroundColor: '#ef4444', tension: 0.4 },
-      { label: 'RW 02', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.4 },
-      { label: 'RW 03', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.4 },
-      { label: 'RW 04', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.4 },
-      { label: 'RW 05', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.4 },
-    ],
-  });
+  return '';
+}
 
-  useEffect(() => {
-    fetch(WEB_APP_URL)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          const totalsPerRW = { 'RW 01': 0, 'RW 02': 0, 'RW 03': 0, 'RW 04': 0, 'RW 05': 0 };
-          let totalSemua = 0;
+function ambilNamaRW(item) {
+  const nilai = String(
+    ambilNilai(item, [
+      'rw',
+      'RW',
+      'Wilayah',
+      'wilayah',
+    ])
+  )
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, ' ');
 
-          const bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
-          const rwTren = {
-            'RW 01': Array(12).fill(0),
-            'RW 02': Array(12).fill(0),
-            'RW 03': Array(12).fill(0),
-            'RW 04': Array(12).fill(0),
-            'RW 05': Array(12).fill(0),
-          };
+  const cocok =
+    nilai.match(/(?:^|\s)RW\s*0?([1-5])$/) ||
+    nilai.match(/^0?([1-5])$/);
 
-          data.forEach((item) => {
-            const rw = item.rw || item.RW || item.Wilayah;
-            const totalKg = Number(item.total || item.Total || item.total_berat || 0);
-            const bulanInput = item.bulan || item.Bulan;
+  return cocok
+    ? `RW ${cocok[1].padStart(2, '0')}`
+    : nilai;
+}
 
-            totalSemua += totalKg;
+function ambilIndeksBulan(nilaiBulan) {
+  const nilai = String(nilaiBulan)
+    .trim()
+    .toLowerCase();
 
-            if (totalsPerRW[rw] !== undefined) {
-              totalsPerRW[rw] += totalKg;
-            }
+  if (!nilai) return -1;
 
-            if (rwTren[rw]) {
-              const foundIndex = bulanList.findIndex(b => bulanInput && bulanInput.toLowerCase().startsWith(b.toLowerCase()));
-              if (foundIndex !== -1) {
-                rwTren[rw][foundIndex] += totalKg;
-              }
-            }
-          });
+  if (/^\d{1,2}$/.test(nilai)) {
+    const angka = Number(nilai);
 
-          let maxRW = '-';
-          let maxKg = -1;
-          for (const [rwKey, kgVal] of Object.entries(totalsPerRW)) {
-            if (kgVal > maxKg) {
-              maxKg = kgVal;
-              maxRW = rwKey;
-            }
-          }
+    if (angka >= 1 && angka <= 12) {
+      return angka - 1;
+    }
+  }
 
-          setTotalSampahKeseluruhan(totalSemua);
-          setWilayahTeraktif(maxKg > 0 ? maxRW : '-');
+  const aliasBulan = [
+    ['januari', ['jan', 'januari']],
+    ['februari', ['feb', 'februari']],
+    ['maret', ['mar', 'maret']],
+    ['april', ['apr', 'april']],
+    ['mei', ['mei']],
+    ['juni', ['jun', 'juni']],
+    ['juli', ['jul', 'juli']],
+    ['agustus', ['ags', 'agu', 'agustus']],
+    ['september', ['sep', 'september']],
+    ['oktober', ['okt', 'oktober']],
+    ['november', ['nov', 'november']],
+    ['desember', ['des', 'desember']],
+  ];
 
-          setDataGrafik({
-            labels: ['RW 01', 'RW 02', 'RW 03', 'RW 04', 'RW 05'],
-            datasets: [{
-              label: 'Total Sampah (Kg) - Akumulasi',
-              data: [totalsPerRW['RW 01'], totalsPerRW['RW 02'], totalsPerRW['RW 03'], totalsPerRW['RW 04'], totalsPerRW['RW 05']],
-              backgroundColor: '#0f766e', borderRadius: 4, barPercentage: 0.6,
-            }],
-          });
+  for (
+    let indeks = 0;
+    indeks < aliasBulan.length;
+    indeks++
+  ) {
+    if (
+      aliasBulan[indeks][1].some((alias) =>
+        nilai.startsWith(alias)
+      )
+    ) {
+      return indeks;
+    }
+  }
 
-          setTrenTahunan({
-            labels: bulanList,
-            datasets: [
-              { label: 'RW 01', data: rwTren['RW 01'], borderColor: '#ef4444', backgroundColor: '#ef4444', tension: 0.4 },
-              { label: 'RW 02', data: rwTren['RW 02'], borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.4 },
-              { label: 'RW 03', data: rwTren['RW 03'], borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.4 },
-              { label: 'RW 04', data: rwTren['RW 04'], borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.4 },
-              { label: 'RW 05', data: rwTren['RW 05'], borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.4 },
-            ],
-          });
-        }
-      })
-      .catch((err) => {
-        console.error('Gagal memuat data statistik dan grafik:', err);
+  return -1;
+}
+
+function ambilTahun(item) {
+  const nilai = String(
+    ambilNilai(item, ['tahun', 'Tahun'])
+  ).trim();
+
+  const cocok = nilai.match(
+    /(?:^|\D)(20\d{2})(?:\D|$)/
+  );
+
+  return cocok ? cocok[1] : nilai;
+}
+
+function angkaAman(nilai) {
+  if (
+    nilai === undefined ||
+    nilai === null ||
+    nilai === ''
+  ) {
+    return 0;
+  }
+
+  const angka = Number(nilai);
+
+  return Number.isFinite(angka) ? angka : 0;
+}
+
+function ambilTotalBerat(item) {
+  const nilaiTotal = ambilNilai(item, [
+    'total',
+    'Total',
+    'total_berat',
+    'TotalBerat',
+  ]);
+
+  if (nilaiTotal !== '') {
+    return angkaAman(nilaiTotal);
+  }
+
+  return (
+    angkaAman(
+      ambilNilai(item, ['plastik', 'Plastik'])
+    ) +
+    angkaAman(
+      ambilNilai(item, ['kertas', 'Kertas'])
+    ) +
+    angkaAman(
+      ambilNilai(item, ['logam', 'Logam'])
+    ) +
+    angkaAman(
+      ambilNilai(item, ['kaca', 'Kaca'])
+    )
+  );
+}
+
+function App() {
+  const sekarang = new Date();
+  const tahunSekarang = String(
+    sekarang.getFullYear()
+  );
+  const bulanSekarang = sekarang.getMonth();
+
+  const [activeTab, setActiveTab] =
+    useState('dashboard');
+
+  const [mobileMenuOpen, setMobileMenuOpen] =
+    useState(false);
+
+  const [dataSetoran, setDataSetoran] =
+    useState([]);
+
+  const [sedangMemuat, setSedangMemuat] =
+    useState(true);
+
+  const [sedangMengirim, setSedangMengirim] =
+    useState(false);
+
+  const [pesanKesalahan, setPesanKesalahan] =
+    useState('');
+
+  const pengirimanAktif = useRef(false);
+
+  const [formData, setFormData] =
+    useState(buatFormAwal);
+
+  // Pilihan periode untuk grafik perbandingan per RW.
+  const [bulanGrafik, setBulanGrafik] =
+    useState(bulanSekarang);
+
+  const [tahunGrafik, setTahunGrafik] =
+    useState(tahunSekarang);
+
+  // Pilihan tahun untuk grafik perkembangan tahunan.
+  const [tahunTren, setTahunTren] =
+    useState(tahunSekarang);
+
+  // Mengambil data dari Google Sheets.
+  const muatDataSetoran = useCallback(async () => {
+    setSedangMemuat(true);
+    setPesanKesalahan('');
+
+    try {
+      const response = await fetch(WEB_APP_URL, {
+        cache: 'no-store',
       });
+
+      if (!response.ok) {
+        throw new Error(
+          'Server tidak dapat mengambil data.'
+        );
+      }
+
+      const hasil = await response.json();
+
+      if (!Array.isArray(hasil)) {
+        throw new Error(
+          hasil?.error ||
+            'Format data dari Google Sheets tidak sesuai.'
+        );
+      }
+
+      setDataSetoran(hasil);
+
+      return true;
+    } catch (error) {
+      console.error(
+        'Gagal memuat data setoran:',
+        error
+      );
+
+      setPesanKesalahan(
+        'Data belum dapat dimuat. Periksa koneksi internet atau akses Google Sheets.'
+      );
+
+      return false;
+    } finally {
+      setSedangMemuat(false);
+    }
   }, []);
 
+  useEffect(() => {
+    muatDataSetoran();
+  }, [muatDataSetoran]);
+
+  // Daftar tahun berisi tahun yang ada di data,
+  // beberapa tahun sebelumnya, dan beberapa tahun ke depan.
+  const daftarTahun = useMemo(() => {
+    const tahunDasar = sekarang.getFullYear();
+
+    const tahunTersedia = new Set(
+      Array.from(
+        { length: 9 },
+        (_, indeks) =>
+          String(tahunDasar - 3 + indeks)
+      )
+    );
+
+    dataSetoran.forEach((item) => {
+      const tahun = ambilTahun(item);
+
+      if (/^20\d{2}$/.test(tahun)) {
+        tahunTersedia.add(tahun);
+      }
+    });
+
+    // Pastikan tahun terpilih tetap tersedia.
+    tahunTersedia.add(tahunGrafik);
+    tahunTersedia.add(tahunTren);
+
+    return [...tahunTersedia].sort(
+      (a, b) => Number(b) - Number(a)
+    );
+  }, [dataSetoran, tahunGrafik, tahunTren]);
+
+  // Ringkasan tetap memakai bulan dan tahun berjalan,
+  // walaupun pengguna sedang melihat periode lain.
+  const ringkasanBulanIni = useMemo(() => {
+    const totalPerRW = Object.fromEntries(
+      DAFTAR_RW.map((rw) => [rw, 0])
+    );
+
+    let total = 0;
+
+    dataSetoran.forEach((item) => {
+      if (
+        ambilTahun(item) !== tahunSekarang ||
+        ambilIndeksBulan(
+          ambilNilai(item, ['bulan', 'Bulan'])
+        ) !== bulanSekarang
+      ) {
+        return;
+      }
+
+      const berat = ambilTotalBerat(item);
+      const rw = ambilNamaRW(item);
+
+      total += berat;
+
+      if (totalPerRW[rw] !== undefined) {
+        totalPerRW[rw] += berat;
+      }
+    });
+
+    let wilayahTeraktif = '-';
+    let beratTertinggi = 0;
+
+    DAFTAR_RW.forEach((rw) => {
+      if (totalPerRW[rw] > beratTertinggi) {
+        beratTertinggi = totalPerRW[rw];
+        wilayahTeraktif = rw;
+      }
+    });
+
+    return {
+      total,
+      wilayahTeraktif,
+    };
+  }, [
+    dataSetoran,
+    tahunSekarang,
+    bulanSekarang,
+  ]);
+
+  // Grafik batang: mengikuti pilihan bulan dan tahun.
+  const dataGrafik = useMemo(() => {
+    const totalPerRW = Object.fromEntries(
+      DAFTAR_RW.map((rw) => [rw, 0])
+    );
+
+    dataSetoran.forEach((item) => {
+      const tahun = ambilTahun(item);
+
+      const bulan = ambilIndeksBulan(
+        ambilNilai(item, ['bulan', 'Bulan'])
+      );
+
+      if (
+        tahun !== tahunGrafik ||
+        bulan !== bulanGrafik
+      ) {
+        return;
+      }
+
+      const rw = ambilNamaRW(item);
+
+      if (totalPerRW[rw] !== undefined) {
+        totalPerRW[rw] += ambilTotalBerat(item);
+      }
+    });
+
+    return {
+      labels: DAFTAR_RW,
+      datasets: [
+        {
+          label: `Total setoran ${NAMA_BULAN[bulanGrafik]} ${tahunGrafik} (kg)`,
+          data: DAFTAR_RW.map(
+            (rw) => totalPerRW[rw]
+          ),
+          backgroundColor: '#0f766e',
+          borderRadius: 5,
+          barPercentage: 0.6,
+        },
+      ],
+    };
+  }, [
+    dataSetoran,
+    bulanGrafik,
+    tahunGrafik,
+  ]);
+
+  // Grafik garis: mengikuti pilihan tahun.
+  const trenTahunan = useMemo(() => {
+    const trenPerRW = Object.fromEntries(
+      DAFTAR_RW.map((rw) => [
+        rw,
+        Array(12).fill(0),
+      ])
+    );
+
+    dataSetoran.forEach((item) => {
+      if (ambilTahun(item) !== tahunTren) {
+        return;
+      }
+
+      const rw = ambilNamaRW(item);
+
+      const bulan = ambilIndeksBulan(
+        ambilNilai(item, ['bulan', 'Bulan'])
+      );
+
+      if (
+        bulan < 0 ||
+        bulan > 11 ||
+        !trenPerRW[rw]
+      ) {
+        return;
+      }
+
+      trenPerRW[rw][bulan] +=
+        ambilTotalBerat(item);
+    });
+
+    return {
+      labels: BULAN_SINGKAT,
+      datasets: DAFTAR_RW.map(
+        (rw, indeks) => ({
+          label: rw,
+          data: trenPerRW[rw],
+          borderColor: WARNA_RW[indeks],
+          backgroundColor: WARNA_RW[indeks],
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          tension: 0.35,
+        })
+      ),
+    };
+  }, [dataSetoran, tahunTren]);
+
+  // Mengelola perubahan formulir.
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+    setFormData((sebelumnya) => ({
+      ...sebelumnya,
+      [name]: value,
+    }));
   };
 
+  // Mengirim data ke Google Sheets.
   const kirimData = async (e) => {
     e.preventDefault();
+
+    if (pengirimanAktif.current) {
+      return;
+    }
+
+    const jenisSampah = [
+      'plastik',
+      'kertas',
+      'logam',
+      'kaca',
+    ];
+
+    const tidakValid = jenisSampah.some(
+      (jenis) => {
+        const nilai = formData[jenis];
+
+        return (
+          String(nilai).trim() === '' ||
+          !Number.isFinite(Number(nilai)) ||
+          Number(nilai) < 0
+        );
+      }
+    );
+
+    if (tidakValid) {
+      alert(
+        'Periksa berat setiap jenis sampah. Isian harus berupa angka nol atau lebih.'
+      );
+      return;
+    }
 
     const dataKirim = {
       tahun: formData.tahun,
@@ -139,141 +525,356 @@ function App() {
       kaca: Number(formData.kaca),
     };
 
-    try {
-      alert("Mengirim data ke Google Sheets...");
+    pengirimanAktif.current = true;
+    setSedangMengirim(true);
 
+    try {
       const response = await fetch(WEB_APP_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain;charset=utf-8',
         },
-        body: JSON.stringify(dataKirim)
+        body: JSON.stringify(dataKirim),
       });
 
-      const result = await response.json();
-      console.log('Respon dari server:', result);
+      if (!response.ok) {
+        throw new Error(
+          'Server gagal memproses permintaan.'
+        );
+      }
 
-      alert(`Berhasil! Data setoran ${formData.rw} untuk bulan ${formData.bulan} (${formData.tahun}) berhasil dikirim ke Google Sheets.`);
+      const hasil = await response.json();
 
-      setFormData({
-        bulan: 'Oktober',
-        tahun: '2026',
-        rw: 'RW 01',
-        plastik: '',
-        kertas: '',
-        logam: '',
-        kaca: '',
-      });
+      if (hasil?.status !== 'success') {
+        throw new Error(
+          hasil?.message ||
+            'Server belum mengonfirmasi penyimpanan data.'
+        );
+      }
 
+      alert(
+        `Berhasil! Setoran ${formData.rw} untuk ${formData.bulan} ${formData.tahun} berhasil disimpan ke Google Sheets.`
+      );
+
+      setFormData(buatFormAwal());
+
+      await muatDataSetoran();
     } catch (error) {
-      console.error('Error:', error);
-      alert('Gagal mengirim data. Coba cek koneksi atau URL Apps Script.');
+      console.error(
+        'Gagal menyimpan data:',
+        error
+      );
+
+      alert(
+        `Data belum dapat dipastikan tersimpan. ${
+          error.message ||
+          'Periksa koneksi dan akses Google Sheets.'
+        }`
+      );
+    } finally {
+      pengirimanAktif.current = false;
+      setSedangMengirim(false);
     }
   };
 
+  const pilihTab = (tab) => {
+    setActiveTab(tab);
+    setMobileMenuOpen(false);
+  };
+
+  const namaTabAktif = {
+    dashboard: 'Ringkasan Data',
+    input: 'Pencatatan Setoran',
+    rekap: 'Rekapitulasi Data',
+    info: 'Informasi dan Panduan',
+  }[activeTab];
+
   const getTabStyle = (tabName) => {
-    const isActive = activeTab === tabName;
+    const aktif = activeTab === tabName;
+
     return {
-      padding: '14px 22px',
+      padding: '14px 18px',
       cursor: 'pointer',
       fontWeight: '600',
-      background: isActive ? 'linear-gradient(135deg, #0f766e 0%, #115e59 100%)' : '#ffffff',
-      color: isActive ? '#ffffff' : '#475569',
+      background: aktif
+        ? 'linear-gradient(135deg, #0f766e 0%, #115e59 100%)'
+        : '#ffffff',
+      color: aktif ? '#ffffff' : '#475569',
       borderRadius: '10px',
-      transition: 'all 0.25s ease',
+      transition: 'all 0.2s ease',
       fontSize: '14px',
       display: 'flex',
       alignItems: 'center',
-      gap: '10px',
-      boxShadow: isActive ? '0 4px 12px rgba(15, 118, 110, 0.25)' : '0 1px 3px rgba(0,0,0,0.04)',
-      border: isActive ? '1px solid transparent' : '1px solid #e2e8f0',
-      flex: '1',
+      gap: '9px',
+      boxShadow: aktif
+        ? '0 4px 12px rgba(15, 118, 110, 0.2)'
+        : '0 1px 3px rgba(0, 0, 0, 0.04)',
+      border: aktif
+        ? '1px solid transparent'
+        : '1px solid #e2e8f0',
+      flex: '1 1 180px',
       minWidth: '180px',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      boxSizing: 'border-box',
     };
   };
 
   return (
-    <div style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '32px 24px', maxWidth: '1200px', margin: '0 auto', flex: 1, width: '100%', boxSizing: 'border-box' }}>
+    <div
+      style={{
+        backgroundColor: 'var(--bg-color)',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <main
+        style={{
+          padding: '32px 24px',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          flex: 1,
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
         <Header />
 
-        <div style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ffffff', padding: '12px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }} className="mobile-menu-bar">
-            <span style={{ fontWeight: '700', fontSize: '14px', color: '#0f766e', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              📌 Menu: {activeTab === 'dashboard' ? 'Dashboard Utama' : activeTab === 'input' ? 'Input Setoran Baru' : activeTab === 'rekap' ? 'Rekap Data' : 'Info & Panduan'}
-            </span>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={{ background: '#0f766e', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}
+        <nav
+          aria-label="Navigasi utama"
+          style={{ marginBottom: '32px' }}
+        >
+          <div
+            className="mobile-menu-bar"
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '12px',
+              background: '#ffffff',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <span
+              style={{
+                fontWeight: '600',
+                fontSize: '14px',
+                color: '#0f766e',
+              }}
             >
-              {mobileMenuOpen ? '✕ Tutup' : '☰ Menu'}
+              Halaman: {namaTabAktif}
+            </span>
+
+            <button
+              type="button"
+              onClick={() =>
+                setMobileMenuOpen((terbuka) => !terbuka)
+              }
+              aria-expanded={mobileMenuOpen}
+              aria-controls="pilihan-halaman"
+              style={{
+                background: '#0f766e',
+                color: '#ffffff',
+                border: 'none',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '13px',
+                flexShrink: 0,
+              }}
+            >
+              {mobileMenuOpen
+                ? 'Tutup Menu'
+                : '☰ Pilih Halaman'}
             </button>
           </div>
 
           <div
-            style={{
-              display: 'flex',
-              gap: '12px',
-              marginTop: '12px',
-              flexWrap: 'wrap'
-            }}
+            id="pilihan-halaman"
             className="nav-tabs-container"
+            style={{
+              display: mobileMenuOpen ? 'grid' : 'none',
+              gridTemplateColumns: 'minmax(0, 1fr)',
+              gap: '8px',
+              marginTop: '12px',
+            }}
           >
-            <button style={getTabStyle('dashboard')} onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}>
-              📊 Dashboard Utama
+            <button
+              type="button"
+              style={getTabStyle('dashboard')}
+              onClick={() => pilihTab('dashboard')}
+            >
+              📊 Ringkasan Data
             </button>
-            <button style={getTabStyle('input')} onClick={() => { setActiveTab('input'); setMobileMenuOpen(false); }}>
-              📝 Input Setoran Baru
+
+            <button
+              type="button"
+              style={getTabStyle('input')}
+              onClick={() => pilihTab('input')}
+            >
+              📝 Pencatatan Setoran
             </button>
-            <button style={getTabStyle('rekap')} onClick={() => { setActiveTab('rekap'); setMobileMenuOpen(false); }}>
-              🗂️ Rekap Data
+
+            <button
+              type="button"
+              style={getTabStyle('rekap')}
+              onClick={() => pilihTab('rekap')}
+            >
+              🗂️ Rekapitulasi Data
             </button>
-            <button style={getTabStyle('info')} onClick={() => { setActiveTab('info'); setMobileMenuOpen(false); }}>
-              📖 Info & Panduan
+
+            <button
+              type="button"
+              style={getTabStyle('info')}
+              onClick={() => pilihTab('info')}
+            >
+              📖 Informasi dan Panduan
             </button>
           </div>
-        </div>
+        </nav>
 
         <style>{`
           @media (min-width: 768px) {
-            .mobile-menu-bar { display: none !important; }
-            .nav-tabs-container { display: flex !important; }
+            .mobile-menu-bar {
+              display: none !important;
+            }
+
+            .nav-tabs-container {
+              display: flex !important;
+              flex-wrap: wrap !important;
+            }
           }
+
           @media (max-width: 767px) {
-            .mobile-menu-bar { display: flex !important; }
-            .nav-tabs-container { 
-              display: ${mobileMenuOpen ? 'grid' : 'none'} !important; 
-              grid-template-columns: 1fr !important;
+            .mobile-menu-bar {
+              display: flex !important;
+            }
+
+            .nav-tabs-container {
+              grid-template-columns: minmax(0, 1fr) !important;
+            }
+
+            .nav-tabs-container button {
+              width: 100%;
+              min-width: 0 !important;
+              justify-content: flex-start !important;
+              padding: 14px 16px !important;
+            }
+          }
+
+          @media (max-width: 480px) {
+            .app-container {
+              padding: 20px 12px !important;
             }
           }
         `}</style>
 
-        {activeTab === 'dashboard' && (
-          <div>
-            <Informasi
-              totalSampahBulanIni={totalSampahKeseluruhan}
-              wilayahTeraktif={wilayahTeraktif}
-            />
-            <Grafik dataGrafik={dataGrafik} trenTahunan={trenTahunan} />
+        {pesanKesalahan && (
+          <div
+            role="alert"
+            style={{
+              background: '#fff7ed',
+              color: '#9a3412',
+              border: '1px solid #fed7aa',
+              borderRadius: '10px',
+              padding: '14px 16px',
+              marginBottom: '20px',
+              fontSize: '14px',
+              lineHeight: '1.6',
+            }}
+          >
+            <p style={{ margin: '0 0 10px' }}>
+              {pesanKesalahan}
+            </p>
+
+            <button
+              type="button"
+              onClick={muatDataSetoran}
+              style={{
+                background: '#ffffff',
+                color: '#9a3412',
+                border: '1px solid #fdba74',
+                borderRadius: '7px',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                fontWeight: '600',
+              }}
+            >
+              Coba Muat Kembali
+            </button>
           </div>
+        )}
+
+        {activeTab === 'dashboard' && (
+          <section aria-label="Ringkasan dan grafik setoran">
+            {sedangMemuat && (
+              <p role="status">
+                Sedang memuat data setoran...
+              </p>
+            )}
+
+            <Informasi
+              totalSampahBulanIni={
+                ringkasanBulanIni.total
+              }
+              wilayahTeraktif={
+                ringkasanBulanIni.wilayahTeraktif
+              }
+            />
+
+            <Grafik
+              dataGrafik={dataGrafik}
+              trenTahunan={trenTahunan}
+              bulanGrafik={bulanGrafik}
+              setBulanGrafik={setBulanGrafik}
+              tahunGrafik={tahunGrafik}
+              setTahunGrafik={setTahunGrafik}
+              tahunTren={tahunTren}
+              setTahunTren={setTahunTren}
+              daftarTahun={daftarTahun}
+              sedangMemuat={sedangMemuat}
+            />
+          </section>
         )}
 
         {activeTab === 'input' && (
-          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <FormInput formData={formData} handleInputChange={handleInputChange} kirimData={kirimData} />
-          </div>
+          <section
+            aria-label="Formulir pencatatan setoran"
+            style={{
+              maxWidth: '800px',
+              margin: '0 auto',
+            }}
+          >
+            {sedangMengirim && (
+              <p role="status">
+                Sedang menyimpan data setoran...
+              </p>
+            )}
+
+            <FormInput
+              formData={formData}
+              handleInputChange={handleInputChange}
+              kirimData={kirimData}
+            />
+          </section>
         )}
 
         {activeTab === 'rekap' && (
-          <div><TabelData /></div>
+          <section aria-label="Rekapitulasi data setoran">
+            <TabelData />
+          </section>
         )}
 
         {activeTab === 'info' && (
-          <div><InfoBankSampah /></div>
+          <section aria-label="Informasi dan panduan bank sampah">
+            <InfoBankSampah />
+          </section>
         )}
+      </main>
 
-      </div>
       <Footer />
     </div>
   );
