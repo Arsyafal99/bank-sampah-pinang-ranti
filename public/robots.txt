@@ -1,0 +1,5 @@
+
+User-agent: *
+Allow: /
+
+Sitemap: https://bank-sampah-pinang-ranti.vercel.app/sitemap.xml
