@@ -197,33 +197,6 @@ const InfoBankSampah = () => {
           </div>
         </section>
 
-        {/* Informasi minyak jelantah */}
-        <aside
-          className="panduan-jelantah"
-          aria-labelledby="judul-jelantah"
-        >
-          <div className="panduan-jelantah-ikon" aria-hidden="true">
-            🛢️
-          </div>
-
-          <div>
-            <h2 id="judul-jelantah">
-              Informasi Minyak Jelantah
-            </h2>
-
-            <p>
-              Minyak jelantah belum memiliki kolom
-              pencatatan pada formulir sistem ini.
-              Penanganan atau penyalurannya perlu
-              mengikuti ketentuan yang berlaku di wilayah.
-            </p>
-
-            <span className="panduan-jelantah-status">
-              Belum tersedia pada formulir pencatatan
-            </span>
-          </div>
-        </aside>
-
         {/* Tahapan penyetoran */}
         <section
           className="panduan-bagian"

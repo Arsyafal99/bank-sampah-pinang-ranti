@@ -1,6 +1,5 @@
 import React from 'react';
 import { Bar, Line } from 'react-chartjs-2';
-
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,10 +7,8 @@ import {
   BarElement,
   PointElement,
   LineElement,
-  Title,
   Tooltip,
   Legend,
-  Filler,
 } from 'chart.js';
 
 ChartJS.register(
@@ -20,10 +17,8 @@ ChartJS.register(
   BarElement,
   PointElement,
   LineElement,
-  Title,
   Tooltip,
-  Legend,
-  Filler
+  Legend
 );
 
 const NAMA_BULAN = [
@@ -46,6 +41,27 @@ const formatAngka = (nilai) =>
     maximumFractionDigits: 2,
   }).format(Number(nilai) || 0);
 
+function adaNilaiSetoran(data) {
+  if (!Array.isArray(data?.datasets)) return false;
+
+  return data.datasets.some((dataset) =>
+    Array.isArray(dataset.data) &&
+    dataset.data.some((nilai) => Number(nilai) > 0)
+  );
+}
+
+function GrafikKosong({ pesan }) {
+  return (
+    <div className="grafik-kosong" role="status">
+      <span className="grafik-kosong-symbol" aria-hidden="true">
+        —
+      </span>
+      <strong>Belum ada berat setoran</strong>
+      <p>{pesan}</p>
+    </div>
+  );
+}
+
 const Grafik = ({
   dataGrafik,
   trenTahunan,
@@ -58,47 +74,49 @@ const Grafik = ({
   daftarTahun = [],
   sedangMemuat = false,
 }) => {
-  if (!dataGrafik || !trenTahunan) {
-    return (
-      <div className="card grafik-status">
-        Grafik sedang disiapkan...
-      </div>
-    );
-  }
+  const namaBulan = NAMA_BULAN[bulanGrafik] || NAMA_BULAN[0];
+  const punyaDataBulanan = adaNilaiSetoran(dataGrafik);
+  const punyaDataTahunan = adaNilaiSetoran(trenTahunan);
 
-  const namaBulan =
-    NAMA_BULAN[bulanGrafik] || NAMA_BULAN[0];
+  const tahunTersedia = daftarTahun.length
+    ? daftarTahun
+    : [String(new Date().getFullYear())];
 
   const pilihanGrafikUmum = {
     responsive: true,
     maintainAspectRatio: false,
     resizeDelay: 100,
     animation: {
-      duration: 300,
+      duration: 250,
     },
     interaction: {
       mode: 'index',
       intersect: false,
     },
-  };
-
-  const pilihanGrafikBatang = {
-    ...pilihanGrafikUmum,
     plugins: {
-      legend: {
-        display: false,
-      },
       tooltip: {
         backgroundColor: '#1e293b',
         titleColor: '#ffffff',
         bodyColor: '#ffffff',
         padding: 12,
         cornerRadius: 8,
+        displayColors: true,
+      },
+    },
+  };
+
+  const pilihanGrafikBatang = {
+    ...pilihanGrafikUmum,
+    plugins: {
+      ...pilihanGrafikUmum.plugins,
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        ...pilihanGrafikUmum.plugins.tooltip,
         callbacks: {
           label: (konteks) =>
-            `Total setoran: ${formatAngka(
-              konteks.parsed.y
-            )} kg`,
+            `Total setoran: ${formatAngka(konteks.parsed.y)} kg`,
         },
       },
     },
@@ -120,6 +138,10 @@ const Grafik = ({
       },
       y: {
         beginAtZero: true,
+        ticks: {
+          color: '#64748b',
+          callback: (nilai) => formatAngka(nilai),
+        },
         grid: {
           color: '#e2e8f0',
         },
@@ -128,9 +150,8 @@ const Grafik = ({
           text: 'Berat sampah (kg)',
           color: '#475569',
         },
-        ticks: {
-          precision: 0,
-          callback: (nilai) => formatAngka(nilai),
+        border: {
+          display: false,
         },
       },
     },
@@ -139,6 +160,7 @@ const Grafik = ({
   const pilihanGrafikGaris = {
     ...pilihanGrafikUmum,
     plugins: {
+      ...pilihanGrafikUmum.plugins,
       legend: {
         display: true,
         position: 'bottom',
@@ -147,6 +169,7 @@ const Grafik = ({
           usePointStyle: true,
           pointStyle: 'circle',
           boxWidth: 9,
+          boxHeight: 9,
           padding: 14,
           font: {
             size: 11,
@@ -154,17 +177,20 @@ const Grafik = ({
         },
       },
       tooltip: {
-        backgroundColor: '#1e293b',
-        titleColor: '#ffffff',
-        bodyColor: '#ffffff',
-        padding: 12,
-        cornerRadius: 8,
+        ...pilihanGrafikUmum.plugins.tooltip,
         callbacks: {
           label: (konteks) =>
-            `${konteks.dataset.label}: ${formatAngka(
-              konteks.parsed.y
-            )} kg`,
+            `${konteks.dataset.label}: ${formatAngka(konteks.parsed.y)} kg`,
         },
+      },
+    },
+    elements: {
+      line: {
+        borderWidth: 2.5,
+      },
+      point: {
+        radius: 2.5,
+        hoverRadius: 5,
       },
     },
     scales: {
@@ -178,6 +204,7 @@ const Grafik = ({
             size: 10,
           },
           maxRotation: 0,
+          autoSkip: false,
         },
         border: {
           display: false,
@@ -185,6 +212,10 @@ const Grafik = ({
       },
       y: {
         beginAtZero: true,
+        ticks: {
+          color: '#64748b',
+          callback: (nilai) => formatAngka(nilai),
+        },
         grid: {
           color: '#e2e8f0',
         },
@@ -193,13 +224,20 @@ const Grafik = ({
           text: 'Berat sampah (kg)',
           color: '#475569',
         },
-        ticks: {
-          precision: 0,
-          callback: (nilai) => formatAngka(nilai),
+        border: {
+          display: false,
         },
       },
     },
   };
+
+  if (!dataGrafik || !trenTahunan) {
+    return (
+      <div className="card grafik-status" role="status">
+        Grafik sedang disiapkan...
+      </div>
+    );
+  }
 
   return (
     <>
@@ -210,14 +248,12 @@ const Grafik = ({
           aria-label="Perbandingan setoran per RW"
         >
           <div className="grafik-kepala">
-            <div>
+            <div className="grafik-kepala-copy">
               <h3 className="grafik-judul">
                 Perbandingan Setoran per RW
               </h3>
-
               <p className="grafik-keterangan">
-                Jumlah sampah yang terkumpul pada periode
-                pilihan.
+                Jumlah sampah yang terkumpul pada periode pilihan.
               </p>
             </div>
 
@@ -231,12 +267,11 @@ const Grafik = ({
               <label htmlFor="pilihan-bulan-grafik">
                 Pilih Bulan
               </label>
-
               <select
                 id="pilihan-bulan-grafik"
                 value={bulanGrafik}
-                onChange={(e) =>
-                  setBulanGrafik(Number(e.target.value))
+                onChange={(event) =>
+                  setBulanGrafik(Number(event.target.value))
                 }
               >
                 {NAMA_BULAN.map((bulan, indeks) => (
@@ -251,15 +286,12 @@ const Grafik = ({
               <label htmlFor="pilihan-tahun-grafik">
                 Pilih Tahun
               </label>
-
               <select
                 id="pilihan-tahun-grafik"
                 value={tahunGrafik}
-                onChange={(e) =>
-                  setTahunGrafik(e.target.value)
-                }
+                onChange={(event) => setTahunGrafik(event.target.value)}
               >
-                {daftarTahun.map((tahun) => (
+                {tahunTersedia.map((tahun) => (
                   <option key={tahun} value={tahun}>
                     {tahun}
                   </option>
@@ -269,16 +301,18 @@ const Grafik = ({
           </div>
 
           <div className="grafik-area grafik-area-batang">
-            <Bar
-              data={dataGrafik}
-              options={pilihanGrafikBatang}
-            />
+            {sedangMemuat ? (
+              <GrafikKosong pesan="Data sedang dimuat. Tunggu sebentar." />
+            ) : punyaDataBulanan ? (
+              <Bar data={dataGrafik} options={pilihanGrafikBatang} />
+            ) : (
+              <GrafikKosong pesan="Belum ada berat setoran untuk bulan dan tahun ini. Coba pilih periode lain." />
+            )}
           </div>
 
           <p className="grafik-catatan">
-            Grafik mengikuti bulan dan tahun yang dipilih.
-            Data yang belum tercatat akan ditampilkan sebagai
-            nol.
+            Grafik mengikuti bulan dan tahun yang dipilih. Berat ditampilkan
+            dalam kilogram dan mendukung angka desimal.
           </p>
         </section>
 
@@ -288,14 +322,12 @@ const Grafik = ({
           aria-label="Perkembangan setoran bulanan"
         >
           <div className="grafik-kepala">
-            <div>
+            <div className="grafik-kepala-copy">
               <h3 className="grafik-judul">
                 Perkembangan Setoran Bulanan
               </h3>
-
               <p className="grafik-keterangan">
-                Perbandingan jumlah sampah dari lima RW
-                sepanjang tahun yang dipilih.
+                Perbandingan jumlah sampah dari lima RW sepanjang tahun yang dipilih.
               </p>
             </div>
 
@@ -309,15 +341,12 @@ const Grafik = ({
               <label htmlFor="pilihan-tahun-tren">
                 Pilih Tahun Grafik
               </label>
-
               <select
                 id="pilihan-tahun-tren"
                 value={tahunTren}
-                onChange={(e) =>
-                  setTahunTren(e.target.value)
-                }
+                onChange={(event) => setTahunTren(event.target.value)}
               >
-                {daftarTahun.map((tahun) => (
+                {tahunTersedia.map((tahun) => (
                   <option key={tahun} value={tahun}>
                     {tahun}
                   </option>
@@ -327,20 +356,28 @@ const Grafik = ({
           </div>
 
           <div className="grafik-area grafik-area-garis">
-            <Line
-              data={trenTahunan}
-              options={pilihanGrafikGaris}
-            />
+            {sedangMemuat ? (
+              <GrafikKosong pesan="Data sedang dimuat. Tunggu sebentar." />
+            ) : punyaDataTahunan ? (
+              <Line data={trenTahunan} options={pilihanGrafikGaris} />
+            ) : (
+              <GrafikKosong pesan="Belum ada berat setoran yang tercatat untuk tahun ini." />
+            )}
           </div>
 
           <p className="grafik-catatan">
-            Gunakan keterangan RW di bawah grafik untuk
-            membandingkan perkembangan setiap wilayah.
+            Gunakan keterangan RW pada legenda untuk membandingkan perkembangan
+            setiap wilayah.
           </p>
         </section>
       </div>
 
       <style>{`
+        .grafik-dashboard,
+        .grafik-dashboard * {
+          box-sizing: border-box;
+        }
+
         .grafik-dashboard {
           display: grid;
           grid-template-columns: minmax(0, 1fr);
@@ -355,45 +392,54 @@ const Grafik = ({
           flex-direction: column;
           width: 100%;
           min-width: 0;
-          box-sizing: border-box;
           padding: 22px;
           overflow: hidden;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          box-shadow: 0 5px 18px rgba(15, 23, 42, .035);
         }
 
         .grafik-kepala {
           display: flex;
-          flex-direction: column;
           align-items: flex-start;
-          gap: 10px;
+          justify-content: space-between;
+          gap: 14px;
           margin-bottom: 18px;
           padding-bottom: 16px;
-          border-bottom: 2px solid var(--border-color, #e2e8f0);
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        .grafik-kepala-copy {
+          min-width: 0;
         }
 
         .grafik-judul {
-          margin: 0 0 8px;
-          color: var(--text-color, #0f172a);
+          margin: 0 0 7px;
+          color: #0f2f49;
           font-size: 18px;
-          font-weight: 700;
+          font-weight: 800;
           line-height: 1.45;
           overflow-wrap: anywhere;
         }
 
         .grafik-keterangan {
           margin: 0;
-          color: var(--text-muted, #64748b);
+          color: #64748b;
           font-size: 13px;
           line-height: 1.7;
         }
 
         .grafik-label-periode {
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          flex: 0 0 auto;
           padding: 7px 11px;
-          background: #ccfbf1;
           color: #115e59;
+          background: #ccfbf1;
           border-radius: 8px;
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 800;
           line-height: 1.5;
         }
 
@@ -419,9 +465,9 @@ const Grafik = ({
         }
 
         .grafik-filter-kolom label {
-          color: var(--text-color, #334155);
+          color: #334155;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 700;
           line-height: 1.5;
         }
 
@@ -431,7 +477,7 @@ const Grafik = ({
           min-height: 44px;
           padding: 10px 12px;
           border: 1px solid #cbd5e1;
-          border-radius: 9px;
+          border-radius: 10px;
           background: #ffffff;
           color: #0f172a;
           font-family: inherit;
@@ -440,7 +486,7 @@ const Grafik = ({
         }
 
         .grafik-filter-kolom select:focus-visible {
-          outline: 3px solid rgba(15, 118, 110, 0.25);
+          outline: 3px solid rgba(15, 118, 110, .2);
           border-color: #0f766e;
         }
 
@@ -455,16 +501,57 @@ const Grafik = ({
           height: 340px;
         }
 
+        .grafik-kosong {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          gap: 9px;
+          width: 100%;
+          height: 100%;
+          padding: 24px;
+          text-align: center;
+          background: #f8fbf9;
+          border: 1px dashed #cbded4;
+          border-radius: 12px;
+        }
+
+        .grafik-kosong-symbol {
+          display: grid;
+          place-items: center;
+          width: 42px;
+          height: 42px;
+          color: #0f766e;
+          background: #dff5eb;
+          border-radius: 13px;
+          font-size: 24px;
+          font-weight: 800;
+        }
+
+        .grafik-kosong strong {
+          color: #245447;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+
+        .grafik-kosong p {
+          max-width: 360px;
+          margin: 0;
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.7;
+        }
+
         .grafik-catatan {
           margin: 14px 0 0;
-          color: var(--text-muted, #64748b);
+          color: #64748b;
           font-size: 12px;
           line-height: 1.7;
         }
 
         .grafik-status {
           padding: 20px;
-          color: var(--text-muted, #64748b);
+          color: #64748b;
         }
 
         @media (min-width: 1100px) {
@@ -479,11 +566,11 @@ const Grafik = ({
           }
 
           .grafik-area {
-            height: 310px;
+            height: 300px;
           }
 
           .grafik-area-garis {
-            height: 350px;
+            height: 340px;
           }
         }
 
@@ -509,7 +596,15 @@ const Grafik = ({
 
           .grafik-card {
             padding: 16px;
-            border-radius: 12px;
+            border-radius: 13px;
+          }
+
+          .grafik-kepala {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 14px;
           }
 
           .grafik-judul {
@@ -520,8 +615,14 @@ const Grafik = ({
             font-size: 12px;
           }
 
+          .grafik-label-periode {
+            padding: 6px 9px;
+            font-size: 11px;
+          }
+
           .grafik-filter {
             gap: 9px;
+            margin-bottom: 16px;
           }
 
           .grafik-filter-kolom label {
@@ -529,7 +630,8 @@ const Grafik = ({
           }
 
           .grafik-filter-kolom select {
-            padding: 9px;
+            min-height: 42px;
+            padding: 9px 8px;
             font-size: 13px;
           }
 
@@ -538,7 +640,15 @@ const Grafik = ({
           }
 
           .grafik-area-garis {
-            height: 330px;
+            height: 320px;
+          }
+
+          .grafik-kosong {
+            padding: 18px 13px;
+          }
+
+          .grafik-kosong p {
+            font-size: 12px;
           }
         }
 
@@ -553,18 +663,26 @@ const Grafik = ({
 
           .grafik-filter-kolom select {
             padding: 8px 6px;
+            font-size: 12px;
           }
 
           .grafik-area {
-            height: 240px;
+            height: 245px;
           }
 
           .grafik-area-garis {
-            height: 310px;
+            height: 305px;
           }
 
           .grafik-judul {
             font-size: 15px;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .grafik-dashboard * {
+            animation: none !important;
+            transition: none !important;
           }
         }
       `}</style>

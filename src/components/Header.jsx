@@ -1,348 +1,315 @@
 import React from 'react';
 
-const Header = () => {
+export default function Header() {
   return (
     <>
-      <header className="app-header">
-        {/* Bagian identitas situs */}
-        <div className="app-header-brand">
-          {/* Logo instansi */}
-          <div className="app-header-logos">
+      <header className="clean-site-header">
+        <div className="clean-header-brand">
+          <div
+            className="clean-header-logos"
+            aria-label="Identitas Pemerintah Daerah"
+          >
             <img
               src="/jakarta%20timur.png"
               alt="Logo Jakarta Timur"
-              className="app-header-logo"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
+              width="48"
+              height="60"
+              loading="eager"
+              onError={(event) => {
+                event.currentTarget.style.display = 'none';
               }}
             />
 
             <span
-              className="app-header-logo-divider"
+              className="clean-logo-divider"
               aria-hidden="true"
             />
 
             <img
               src="/jaya%20raya.png"
               alt="Logo Jaya Raya"
-              className="app-header-logo"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
+              width="48"
+              height="60"
+              loading="eager"
+              onError={(event) => {
+                event.currentTarget.style.display = 'none';
               }}
             />
           </div>
 
-          {/* Judul dan nama instansi */}
-          <div className="app-header-title">
-            <span className="app-header-eyebrow">
+          <div className="clean-header-copy">
+            <span className="clean-header-eyebrow">
               KELURAHAN PINANG RANTI
             </span>
 
-            <h1>Sistem Informasi Bank Sampah</h1>
+            <h1>Bank Sampah</h1>
 
-            <p>
-              Pemerintah Kelurahan Pinang Ranti
-              <span className="app-header-separator" aria-hidden="true">
-                •
-              </span>
-              Jakarta Timur
-            </p>
+            <p>Sistem Informasi Data Setoran Sampah</p>
           </div>
         </div>
 
-        {/* Penanda sistem */}
-        <div
-          className="app-header-status"
-          aria-label="Sistem informasi Bank Sampah"
-        >
-          <span className="app-header-status-dot" aria-hidden="true" />
-
-          <span>Sistem Informasi Warga</span>
+        <div className="clean-header-location">
+          <span
+            className="clean-location-dot"
+            aria-hidden="true"
+          />
+          <span>Jakarta Timur</span>
         </div>
       </header>
 
       <style>{`
-        .app-header {
+        .clean-site-header,
+        .clean-site-header * {
+          box-sizing: border-box;
+        }
+
+        .clean-site-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 24px;
-
           width: 100%;
           min-width: 0;
-          margin-bottom: 30px;
-          padding: clamp(20px, 3vw, 32px);
-
-          background: linear-gradient(
-            135deg,
-            #ffffff 0%,
-            #f8fcfb 100%
-          );
-
-          border: 1px solid #e2e8f0;
-          border-left: 6px solid #0f766e;
+          margin: 0 0 25px;
+          padding: 20px 24px;
+          background: #ffffff;
+          border: 1px solid #e2eae5;
           border-radius: 16px;
-
-          box-shadow:
-            0 8px 24px rgba(15, 23, 42, 0.045),
-            0 2px 5px rgba(15, 23, 42, 0.025);
-
-          box-sizing: border-box;
+          box-shadow: 0 3px 12px rgba(15, 61, 46, 0.035);
         }
 
-        .app-header-brand {
+        .clean-header-brand {
           display: flex;
           align-items: center;
-          gap: 22px;
-
-          flex: 1 1 auto;
+          gap: 17px;
           min-width: 0;
+          flex: 1 1 auto;
         }
 
-        .app-header-logos {
+        .clean-header-logos {
           display: flex;
+          flex: 0 0 auto;
           align-items: center;
           justify-content: center;
-          gap: 12px;
-
-          flex-shrink: 0;
-          padding: 12px 15px;
-
+          gap: 9px;
+          min-height: 76px;
+          padding: 8px 10px;
           background: #ffffff;
           border: 1px solid #e2e8f0;
-          border-radius: 14px;
-
-          box-shadow: 0 3px 9px rgba(15, 23, 42, 0.04);
+          border-radius: 13px;
         }
 
-        .app-header-logo {
+        .clean-header-logos img {
           display: block;
-          width: 52px;
-          height: 64px;
+          width: 48px;
+          height: 60px;
           object-fit: contain;
         }
 
-        .app-header-logo-divider {
+        .clean-logo-divider {
           display: block;
           width: 1px;
-          height: 45px;
+          height: 40px;
           flex-shrink: 0;
-          background: #cbd5e1;
+          background: #dbe5df;
         }
 
-        .app-header-title {
+        .clean-header-copy {
           min-width: 0;
-          flex: 1 1 auto;
         }
 
-        .app-header-eyebrow {
+        .clean-header-eyebrow {
           display: block;
-          margin-bottom: 7px;
-
+          margin-bottom: 3px;
           color: #0f766e;
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 800;
           letter-spacing: 1px;
           line-height: 1.6;
         }
 
-        .app-header-title h1 {
-          margin: 0 0 10px;
-
-          color: #115e59;
-          font-size: clamp(21px, 2.5vw, 29px);
+        .clean-header-copy h1 {
+          margin: 0;
+          color: #123f35;
+          font-size: clamp(22px, 2.5vw, 27px);
           font-weight: 800;
+          line-height: 1.35;
           letter-spacing: -0.6px;
-          line-height: 1.3;
-
           overflow-wrap: anywhere;
         }
 
-        .app-header-title p {
-          display: flex;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 7px;
-
-          margin: 0;
+        .clean-header-copy p {
+          margin: 3px 0 0;
           color: #64748b;
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 500;
-          line-height: 1.8;
+          line-height: 1.65;
         }
 
-        .app-header-separator {
-          color: #0f766e;
-          font-weight: 800;
-        }
-
-        .app-header-status {
+        .clean-header-location {
           display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 9px;
-
           flex: 0 0 auto;
-          max-width: 100%;
-          padding: 10px 14px;
-
-          color: #166534;
-          background: #f0fdf4;
-          border: 1px solid #bbf7d0;
+          align-items: center;
+          gap: 8px;
+          padding: 9px 12px;
+          color: #386b57;
+          background: #f0f8f3;
+          border: 1px solid #dcece1;
           border-radius: 999px;
-
           font-size: 12px;
           font-weight: 700;
-          line-height: 1.6;
-          white-space: normal;
+          white-space: nowrap;
         }
 
-        .app-header-status-dot {
-          display: block;
-          width: 9px;
-          height: 9px;
+        .clean-location-dot {
+          width: 7px;
+          height: 7px;
           flex-shrink: 0;
-
-          background: #16a34a;
+          background: #168467;
           border-radius: 50%;
-          box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
         }
 
-        /* Tablet dan laptop berukuran sedang */
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .app-header {
-            gap: 16px;
-            padding: 22px;
+        /* Tablet */
+        @media (min-width: 641px) and (max-width: 900px) {
+          .clean-site-header {
+            gap: 15px;
+            padding: 18px;
+            margin-bottom: 21px;
           }
 
-          .app-header-brand {
-            gap: 16px;
+          .clean-header-brand {
+            gap: 12px;
           }
 
-          .app-header-logos {
-            gap: 9px;
-            padding: 10px;
+          .clean-header-logos {
+            gap: 6px;
+            min-height: 69px;
+            padding: 7px 8px;
           }
 
-          .app-header-logo {
+          .clean-header-logos img {
             width: 43px;
-            height: 56px;
+            height: 54px;
           }
 
-          .app-header-title h1 {
+          .clean-logo-divider {
+            height: 35px;
+          }
+
+          .clean-header-copy h1 {
             font-size: 23px;
           }
 
-          .app-header-status {
-            padding: 9px 11px;
+          .clean-header-location {
+            padding: 8px 10px;
             font-size: 11px;
           }
         }
 
         /* HP */
-        @media (max-width: 767px) {
-          .app-header {
+        @media (max-width: 640px) {
+          .clean-site-header {
             flex-direction: column;
             align-items: stretch;
-            gap: 18px;
-
-            margin-bottom: 22px;
-            padding: 20px 17px;
-
-            border-left-width: 5px;
+            gap: 12px;
+            padding: 16px 14px;
+            margin-bottom: 19px;
             border-radius: 13px;
           }
 
-          .app-header-brand {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 18px;
-          }
-
-          .app-header-logos {
-            align-self: flex-start;
-            gap: 12px;
-            padding: 10px 14px;
-            border-radius: 12px;
-          }
-
-          .app-header-logo {
-            width: 43px;
-            height: 54px;
-          }
-
-          .app-header-logo-divider {
-            height: 40px;
-          }
-
-          .app-header-title {
+          .clean-header-brand {
+            align-items: center;
+            gap: 11px;
             width: 100%;
           }
 
-          .app-header-eyebrow {
-            font-size: 10px;
-            margin-bottom: 6px;
+          .clean-header-logos {
+            gap: 5px;
+            min-height: 76px;
+            padding: 7px 8px;
           }
 
-          .app-header-title h1 {
-            margin-bottom: 9px;
-            font-size: clamp(21px, 5.7vw, 26px);
-            letter-spacing: -0.4px;
-            line-height: 1.35;
+          .clean-header-logos img {
+            width: 42px;
+            height: 57px;
           }
 
-          .app-header-title p {
-            gap: 4px 7px;
-            font-size: 12px;
-            line-height: 1.8;
+          .clean-logo-divider {
+            height: 39px;
           }
 
-          .app-header-status {
-            align-self: flex-start;
-            padding: 8px 12px;
+          .clean-header-eyebrow {
+            margin-bottom: 3px;
+            font-size: 9px;
+            letter-spacing: 0.4px;
+            line-height: 1.5;
+          }
+
+          .clean-header-copy h1 {
+            font-size: 22px;
+            letter-spacing: -0.45px;
+          }
+
+          .clean-header-copy p {
+            max-width: 240px;
             font-size: 11px;
+            line-height: 1.55;
+          }
+
+          .clean-header-location {
+            align-self: flex-end;
+            gap: 6px;
+            padding: 6px 9px;
+            margin-top: 0;
+            font-size: 10px;
+          }
+
+          .clean-location-dot {
+            width: 6px;
+            height: 6px;
           }
         }
 
-        /* HP kecil */
+        /* HP sangat kecil */
         @media (max-width: 380px) {
-          .app-header {
-            padding: 16px 12px;
-            gap: 15px;
+          .clean-site-header {
+            padding: 14px 10px;
           }
 
-          .app-header-brand {
-            gap: 14px;
-          }
-
-          .app-header-logos {
+          .clean-header-brand {
             gap: 9px;
-            padding: 8px 11px;
           }
 
-          .app-header-logo {
-            width: 39px;
-            height: 49px;
+          .clean-header-logos {
+            gap: 4px;
+            min-height: 69px;
+            padding: 6px 6px;
           }
 
-          .app-header-title h1 {
+          .clean-header-logos img {
+            width: 36px;
+            height: 51px;
+          }
+
+          .clean-logo-divider {
+            height: 34px;
+          }
+
+          .clean-header-eyebrow {
+            font-size: 8px;
+            letter-spacing: 0.2px;
+          }
+
+          .clean-header-copy h1 {
             font-size: 20px;
           }
 
-          .app-header-title p {
-            font-size: 11px;
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .app-header * {
-            animation: none !important;
-            transition: none !important;
+          .clean-header-copy p {
+            max-width: 190px;
+            font-size: 10px;
           }
         }
       `}</style>
     </>
   );
-};
-
-export default Header;
+}

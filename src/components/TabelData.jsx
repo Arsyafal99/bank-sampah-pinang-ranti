@@ -9,9 +9,6 @@ import ExcelJS from 'exceljs';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-const WEB_APP_URL =
-  'https://script.google.com/macros/s/AKfycbyPSYQsJAuVhCi5CmAswNy0wEkr94zwxxsgoRXjyNaOccYWlCykS-g7GroBxMlY0NXBeg/exec';
-
 const DAFTAR_BULAN = [
   'Januari', 'Februari', 'Maret', 'April',
   'Mei', 'Juni', 'Juli', 'Agustus',
@@ -435,9 +432,13 @@ function gabungJudul(
   sheet.getRow(nomorBaris).height = opsi.tinggi || 21;
 }
 
-const TabelData = () => {
-  const [dataSetoran, setDataSetoran] = useState([]);
-  const [loading, setLoading] = useState(true);
+const TabelData = ({ data = [], token = '', onRefresh }) => {
+  // Data tabel berasal dari App.jsx setelah sesi internal diverifikasi.
+  const [dataSetoran, setDataSetoran] = useState(
+    Array.isArray(data) ? data : []
+  );
+
+  const [loading, setLoading] = useState(false);
   const [pesanKesalahan, setPesanKesalahan] = useState('');
 
   const [selectedBulan, setSelectedBulan] = useState('Semua');
@@ -447,42 +448,43 @@ const TabelData = () => {
   const [jenisUnduhan, setJenisUnduhan] = useState('');
 
   const muatData = useCallback(async () => {
+    if (!token || typeof onRefresh !== 'function') {
+      setPesanKesalahan(
+        'Sesi internal tidak tersedia. Silakan masuk kembali.'
+      );
+      return false;
+    }
+
     setLoading(true);
     setPesanKesalahan('');
 
     try {
-      const response = await fetch(WEB_APP_URL, {
-        cache: 'no-store',
-      });
+      const berhasil = await onRefresh();
 
-      if (!response.ok) {
-        throw new Error('Server tidak dapat mengambil data.');
+      if (berhasil === false) {
+        throw new Error('Data internal gagal dimuat. Coba kembali.');
       }
 
-      const hasil = await response.json();
-
-      if (!Array.isArray(hasil)) {
-        throw new Error(
-          hasil?.error ||
-            'Format data yang diterima tidak sesuai.'
-        );
-      }
-
-      setDataSetoran(hasil);
+      return true;
     } catch (error) {
-      console.error('Gagal memuat data:', error);
+      console.error('Gagal memuat data internal:', error);
 
       setPesanKesalahan(
-        'Data belum dapat dimuat. Periksa koneksi internet atau akses Google Sheets.'
+        error.message || 'Data internal gagal dimuat. Coba kembali.'
       );
+
+      return false;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onRefresh, token]);
 
+  // Sinkronkan data dari App.jsx ketika backend mengembalikan hasil terbaru.
   useEffect(() => {
-    muatData();
-  }, [muatData]);
+    setDataSetoran(Array.isArray(data) ? data : []);
+    setLoading(false);
+    setPesanKesalahan('');
+  }, [data]);
 
   const filteredData = useMemo(() => {
     return dataSetoran.filter((item) => {
@@ -545,7 +547,7 @@ const TabelData = () => {
   };
 
   // ==========================================================
-  // EKSPOR EXCEL ASLI (.XLSX)
+  // EKSPOR EXCEL (.XLSX)
   // ==========================================================
   const siapkanWorkbook = useCallback(() => {
     const workbook = new ExcelJS.Workbook();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 
 const DAFTAR_BULAN = [
   'Januari',
@@ -15,14 +15,6 @@ const DAFTAR_BULAN = [
   'Desember',
 ];
 
-const DAFTAR_TAHUN = [
-  '2026',
-  '2027',
-  '2028',
-  '2029',
-  '2030',
-];
-
 const DAFTAR_RW = [
   'RW 01',
   'RW 02',
@@ -32,817 +24,621 @@ const DAFTAR_RW = [
 ];
 
 const JENIS_SAMPAH = [
-  {
-    nama: 'Plastik',
-    kolom: 'plastik',
-    keterangan: 'Berat plastik yang disetorkan.',
-    warna: '#0f766e',
-  },
-  {
-    nama: 'Kertas',
-    kolom: 'kertas',
-    keterangan: 'Berat kertas yang disetorkan.',
-    warna: '#2563eb',
-  },
-  {
-    nama: 'Logam',
-    kolom: 'logam',
-    keterangan: 'Berat logam yang disetorkan.',
-    warna: '#b45309',
-  },
-  {
-    nama: 'Kaca',
-    kolom: 'kaca',
-    keterangan: 'Berat kaca yang disetorkan.',
-    warna: '#7c3aed',
-  },
+  { nama: 'Plastik', kolom: 'plastik' },
+  { nama: 'Kertas', kolom: 'kertas' },
+  { nama: 'Logam', kolom: 'logam' },
+  { nama: 'Kaca', kolom: 'kaca' },
 ];
 
-const formatBerat = (angka) =>
-  new Intl.NumberFormat('id-ID', {
-    maximumFractionDigits: 2,
-  }).format(angka);
+function angkaUntukTotal(nilai) {
+  const teks = String(nilai ?? '').trim();
 
-const FormInput = ({
+  if (!teks) return 0;
+
+  // Desimal menggunakan titik, misalnya 1.5.
+  if (!/^\d+(?:\.\d+)?$/.test(teks)) {
+    return 0;
+  }
+
+  const angka = Number(teks);
+
+  return Number.isFinite(angka) && angka >= 0
+    ? angka
+    : 0;
+}
+
+function formatBerat(nilai) {
+  return new Intl.NumberFormat('id-ID', {
+    maximumFractionDigits: 2,
+  }).format(Number(nilai) || 0);
+}
+
+export default function FormInput({
   formData,
   handleInputChange,
   kirimData,
-}) => {
-  const [pin, setPin] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [pesanPIN, setPesanPIN] = useState('');
+  sedangMengirim = false,
+  disabled = false,
 
-  const handleLoginPin = (e) => {
-    e.preventDefault();
+  // Props tambahan untuk identitas RW dari sesi login.
+  rwTerkunci = false,
+  wilayahRW = '',
+}) {
 
-    if (pin === '2627') {
-      setIsAuthorized(true);
-      setPin('');
-      setPesanPIN('');
-    } else {
-      setPesanPIN(
-        'PIN yang dimasukkan salah. Silakan periksa kembali.'
-      );
-      setPin('');
-    }
-  };
+  const daftarTahun = useMemo(() => {
+    return Array.from(
+      { length: 5 },
+      (_, indeks) => String(2026 + indeks)
+    );
+  }, []);
 
-  const kunciFormulir = () => {
-    setIsAuthorized(false);
-    setPin('');
-    setPesanPIN('');
-  };
 
   const totalBerat = JENIS_SAMPAH.reduce(
-    (total, jenis) => {
-      const nilai = Number(formData[jenis.kolom]);
-
-      return (
-        total +
-        (Number.isFinite(nilai) && nilai >= 0
-          ? nilai
-          : 0)
-      );
-    },
+    (total, jenis) =>
+      total + angkaUntukTotal(formData[jenis.kolom]),
     0
   );
 
-  // Tampilan sebelum PIN dimasukkan.
-  if (!isAuthorized) {
-    return (
-      <>
-        <section className="card form-pin-card">
-          <div
-            className="form-pin-icon"
-            aria-hidden="true"
-          >
-            <span>🔒</span>
-          </div>
+  const inputTerkunci = disabled || sedangMengirim;
 
-          <div className="form-pin-heading">
-            <p className="form-kicker">
-              BANK SAMPAH KELURAHAN PINANG RANTI
-            </p>
+  const identitasRW = wilayahRW || formData.rw || '';
 
-            <h2>Akses Pencatatan Setoran</h2>
-
-            <p>
-              Formulir ini digunakan oleh pengurus RW
-              dan petugas kelurahan untuk mencatat
-              setoran sampah.
-            </p>
-          </div>
-
-          <form
-            onSubmit={handleLoginPin}
-            className="form-pin-content"
-          >
-            <div className="form-group">
-              <label
-                htmlFor="pin-akses"
-                className="form-label"
-              >
-                PIN Akses
-              </label>
-
-              <input
-                id="pin-akses"
-                type="password"
-                inputMode="numeric"
-                autoComplete="off"
-                placeholder="Masukkan PIN akses"
-                value={pin}
-                onChange={(e) => {
-                  setPin(e.target.value);
-                  setPesanPIN('');
-                }}
-                className="form-input"
-                required
-                maxLength={20}
-                aria-describedby={
-                  pesanPIN ? 'pesan-pin' : 'petunjuk-pin'
-                }
-              />
-
-              <p
-                id="petunjuk-pin"
-                className="form-help"
-              >
-                Masukkan PIN yang diberikan kepada
-                petugas pencatatan.
-              </p>
-
-              {pesanPIN && (
-                <p
-                  id="pesan-pin"
-                  className="form-error"
-                  role="alert"
-                >
-                  {pesanPIN}
-                </p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="btn-submit"
-            >
-              Buka Formulir
-            </button>
-          </form>
-
-          <div className="form-pin-footer">
-            <span aria-hidden="true">ℹ️</span>
-            <p>
-              Akses ini ditujukan untuk petugas yang
-              bertanggung jawab atas pencatatan.
-            </p>
-          </div>
-        </section>
-
-        <style>{`
-          .form-pin-card {
-            max-width: 480px;
-            margin: 36px auto;
-            padding: 30px;
-          }
-
-          .form-pin-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 20px;
-            background: #ccfbf1;
-            border-radius: 18px;
-            font-size: 30px;
-          }
-
-          .form-pin-heading {
-            text-align: center;
-          }
-
-          .form-kicker {
-            margin: 0 0 10px;
-            color: #0f766e;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.8px;
-            line-height: 1.7;
-          }
-
-          .form-pin-heading h2 {
-            margin: 0 0 12px;
-            color: #1e293b;
-            font-size: 22px;
-            line-height: 1.4;
-          }
-
-          .form-pin-heading > p:last-child {
-            margin: 0;
-            color: #64748b;
-            font-size: 14px;
-            line-height: 1.8;
-          }
-
-          .form-pin-content {
-            margin-top: 28px;
-          }
-
-          .form-help {
-            margin: 8px 0 0;
-            color: #64748b;
-            font-size: 12px;
-            line-height: 1.7;
-          }
-
-          .form-error {
-            margin: 10px 0 0;
-            padding: 10px 12px;
-            color: #991b1b;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 8px;
-            font-size: 13px;
-            line-height: 1.6;
-          }
-
-          .form-pin-footer {
-            display: flex;
-            align-items: flex-start;
-            gap: 9px;
-            margin-top: 22px;
-            padding-top: 18px;
-            border-top: 1px solid #e2e8f0;
-          }
-
-          .form-pin-footer p {
-            margin: 0;
-            color: #64748b;
-            font-size: 12px;
-            line-height: 1.7;
-          }
-
-          @media (max-width: 767px) {
-            .form-pin-card {
-              margin: 18px auto;
-              padding: 22px 18px;
-            }
-
-            .form-pin-heading h2 {
-              font-size: 20px;
-            }
-          }
-
-          @media (max-width: 380px) {
-            .form-pin-card {
-              padding: 18px 14px;
-            }
-
-            .form-pin-heading h2 {
-              font-size: 18px;
-            }
-          }
-        `}</style>
-      </>
-    );
-  }
-
-  // Tampilan setelah PIN benar.
   return (
-    <>
-      <section
-        className="card form-setoran-card"
-        aria-labelledby="judul-form-setoran"
+    <section className="form-input-modern">
+      <style>{`
+        .form-input-modern {
+          width: 100%;
+          min-width: 0;
+          color: #1e293b;
+        }
+
+        .form-modern-panel {
+          overflow: hidden;
+          width: 100%;
+          background: #ffffff;
+          border: 1px solid #e2e8e5;
+          border-radius: 15px;
+          box-shadow: 0 3px 12px rgba(15, 23, 42, .025);
+        }
+
+        .form-modern-header {
+          padding: 24px 26px 21px;
+          border-bottom: 1px solid #e8eeea;
+        }
+
+        .form-modern-eyebrow {
+          margin: 0 0 7px;
+          color: #0f766e;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 1px;
+          line-height: 1.6;
+        }
+
+        .form-modern-header h2 {
+          margin: 0 0 7px;
+          color: #123f35;
+          font-size: clamp(22px, 3vw, 27px);
+          font-weight: 800;
+          line-height: 1.35;
+          letter-spacing: -.5px;
+        }
+
+        .form-modern-description {
+          max-width: 640px;
+          margin: 0;
+          color: #64748b;
+          font-size: 13px;
+          line-height: 1.75;
+        }
+
+        .form-modern-body {
+          padding: 24px 26px 26px;
+        }
+
+        .form-modern-section {
+          margin-bottom: 27px;
+        }
+
+        .form-modern-section-heading {
+          margin: 0 0 15px;
+        }
+
+        .form-modern-section-heading h3 {
+          margin: 0 0 5px;
+          color: #1e293b;
+          font-size: 15px;
+          font-weight: 800;
+          line-height: 1.5;
+        }
+
+        .form-modern-section-heading p {
+          margin: 0;
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.7;
+        }
+
+        .form-modern-period-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 15px;
+        }
+
+        .form-modern-field {
+          min-width: 0;
+        }
+
+        .form-modern-label {
+          display: block;
+          margin-bottom: 7px;
+          color: #334155;
+          font-size: 12px;
+          font-weight: 700;
+          line-height: 1.6;
+        }
+
+        .form-modern-control {
+          display: block;
+          width: 100%;
+          min-width: 0;
+          min-height: 44px;
+          padding: 10px 12px;
+          box-sizing: border-box;
+          border: 1px solid #d2ddd6;
+          border-radius: 9px;
+          background: #ffffff;
+          color: #1e293b;
+          font-family: inherit;
+          font-size: 14px;
+          line-height: 1.5;
+          outline: none;
+          transition: border-color .18s ease,
+            box-shadow .18s ease;
+        }
+
+        .form-modern-control::placeholder {
+          color: #94a3b8;
+        }
+
+        .form-modern-control:focus {
+          border-color: #0f766e;
+          box-shadow: 0 0 0 3px rgba(15, 118, 110, .10);
+        }
+
+        .form-modern-control:disabled {
+          background: #f1f5f9;
+          color: #64748b;
+          cursor: not-allowed;
+        }
+
+        .form-modern-fixed-rw {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          width: 100%;
+          min-height: 44px;
+          padding: 10px 12px;
+          box-sizing: border-box;
+          color: #115e59;
+          background: #f0fdfa;
+          border: 1px solid #99f6e4;
+          border-radius: 9px;
+          font-size: 14px;
+          font-weight: 800;
+        }
+
+        .form-modern-rw-note {
+          margin: 6px 0 0;
+          color: #64748b;
+          font-size: 10px;
+          line-height: 1.6;
+        }
+
+        .form-modern-weight-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 17px 20px;
+        }
+
+        .form-modern-hint {
+          margin: 12px 0 0;
+          color: #64748b;
+          font-size: 11px;
+          line-height: 1.75;
+        }
+
+        .form-modern-total {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 18px;
+          margin-top: 25px;
+          padding: 18px 20px;
+          background: #f0f8f3;
+          border: 1px solid #d6ebdd;
+          border-radius: 11px;
+        }
+
+        .form-modern-total-label {
+          margin: 0 0 4px;
+          color: #386b57;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .form-modern-total-description {
+          margin: 0;
+          color: #6b8277;
+          font-size: 11px;
+          line-height: 1.65;
+        }
+
+        .form-modern-total-value {
+          color: #115e49;
+          font-size: clamp(23px, 3vw, 29px);
+          font-weight: 800;
+          line-height: 1.3;
+          text-align: right;
+          white-space: nowrap;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .form-modern-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+          flex-wrap: wrap;
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid #e8eeea;
+        }
+
+        .form-modern-footer-note {
+          max-width: 360px;
+          margin: 0;
+          color: #64748b;
+          font-size: 11px;
+          line-height: 1.75;
+        }
+
+        .form-modern-footer-note strong {
+          color: #334155;
+        }
+
+        .form-modern-submit {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 44px;
+          padding: 11px 17px;
+          color: #ffffff;
+          background: #0f766e;
+          border: 1px solid #0f766e;
+          border-radius: 9px;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: background .18s ease;
+        }
+
+        .form-modern-submit:hover:not(:disabled) {
+          background: #115e59;
+        }
+
+        .form-modern-submit:disabled {
+          opacity: .6;
+          cursor: not-allowed;
+        }
+
+        @media (min-width: 641px) and (max-width: 900px) {
+          .form-modern-header,
+          .form-modern-body {
+            padding: 21px;
+          }
+
+          .form-modern-period-grid {
+            gap: 12px;
+          }
+
+          .form-modern-weight-grid {
+            gap: 16px;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .form-modern-panel {
+            border-radius: 12px;
+          }
+
+          .form-modern-header {
+            padding: 19px 16px;
+          }
+
+          .form-modern-header h2 {
+            font-size: 22px;
+          }
+
+          .form-modern-description {
+            font-size: 12px;
+          }
+
+          .form-modern-body {
+            padding: 19px 16px 20px;
+          }
+
+          .form-modern-section {
+            margin-bottom: 24px;
+          }
+
+          .form-modern-period-grid,
+          .form-modern-weight-grid {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 13px;
+          }
+
+          .form-modern-control {
+            min-height: 46px;
+            font-size: 16px;
+          }
+
+          .form-modern-total {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 8px;
+            padding: 16px;
+          }
+
+          .form-modern-total-value {
+            text-align: left;
+          }
+
+          .form-modern-footer {
+            align-items: stretch;
+            flex-direction: column;
+            gap: 13px;
+          }
+
+          .form-modern-submit {
+            width: 100%;
+            min-height: 46px;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .form-modern-control,
+          .form-modern-submit {
+            transition: none;
+          }
+        }
+      `}</style>
+
+      <form
+        className="form-modern-panel"
+        onSubmit={kirimData}
+        noValidate
       >
-        <header className="form-setoran-header">
-          <div className="form-setoran-heading">
-            <p className="form-kicker">
-              PENCATATAN BANK SAMPAH
-            </p>
+        <header className="form-modern-header">
+          <p className="form-modern-eyebrow">
+            PENCATATAN SETORAN
+          </p>
 
-            <h2 id="judul-form-setoran">
-              Catat Setoran Sampah
-            </h2>
+          <h2>Input Data Setoran</h2>
 
-            <p>
-              Isi periode laporan, wilayah RW, dan berat
-              setiap jenis sampah sesuai hasil penimbangan.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={kunciFormulir}
-            className="form-lock-button"
-          >
-            🔒 Kunci Formulir
-          </button>
+          <p className="form-modern-description">
+            Pilih periode pencatatan, kemudian masukkan
+            berat setiap jenis sampah berdasarkan laporan
+            yang diterima.
+          </p>
         </header>
 
-        <form onSubmit={kirimData}>
-          <fieldset className="form-section">
-            <legend className="form-section-title">
-              1. Periode dan Wilayah
-            </legend>
+        <div className="form-modern-body">
+          <section className="form-modern-section">
+            <div className="form-modern-section-heading">
+              <h3>Wilayah dan Periode</h3>
+              <p>
+                Pastikan wilayah, bulan, dan tahun sesuai
+                dengan laporan setoran.
+              </p>
+            </div>
 
-            <div className="form-period-grid">
-              <div className="form-group">
+            <div className="form-modern-period-grid">
+              <div className="form-modern-field">
                 <label
-                  htmlFor="bulan-setoran"
-                  className="form-label"
+                  className="form-modern-label"
+                  htmlFor="form-rw"
                 >
-                  Bulan Laporan
+                  Wilayah RW *
+                </label>
+
+                {rwTerkunci ? (
+                  <>
+                    <div
+                      id="form-rw"
+                      className="form-modern-fixed-rw"
+                      aria-label={`Wilayah RW terverifikasi: ${identitasRW}`}
+                    >
+                      <span>{identitasRW || 'Identitas RW tidak tersedia'}</span>
+                      <span aria-hidden="true">✓</span>
+                    </div>
+
+                    <p className="form-modern-rw-note">
+                      Wilayah ditetapkan berdasarkan kode akses.
+                    </p>
+                  </>
+                ) : (
+                  <select
+                    id="form-rw"
+                    name="rw"
+                    className="form-modern-control"
+                    value={formData.rw}
+                    onChange={handleInputChange}
+                    required
+                    disabled={inputTerkunci}
+                  >
+                    <option value="">Pilih RW</option>
+
+                    {DAFTAR_RW.map((rw) => (
+                      <option value={rw} key={rw}>
+                        {rw}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="form-modern-field">
+                <label
+                  className="form-modern-label"
+                  htmlFor="form-bulan"
+                >
+                  Bulan *
                 </label>
 
                 <select
-                  id="bulan-setoran"
+                  id="form-bulan"
                   name="bulan"
+                  className="form-modern-control"
                   value={formData.bulan}
                   onChange={handleInputChange}
-                  className="form-input"
                   required
+                  disabled={inputTerkunci}
                 >
                   {DAFTAR_BULAN.map((bulan) => (
-                    <option key={bulan} value={bulan}>
+                    <option value={bulan} key={bulan}>
                       {bulan}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="form-group">
+              <div className="form-modern-field">
                 <label
-                  htmlFor="tahun-setoran"
-                  className="form-label"
+                  className="form-modern-label"
+                  htmlFor="form-tahun"
                 >
-                  Tahun Laporan
+                  Tahun *
                 </label>
 
                 <select
-                  id="tahun-setoran"
+                  id="form-tahun"
                   name="tahun"
+                  className="form-modern-control"
                   value={formData.tahun}
                   onChange={handleInputChange}
-                  className="form-input"
                   required
+                  disabled={inputTerkunci}
                 >
-                  {DAFTAR_TAHUN.map((tahun) => (
-                    <option key={tahun} value={tahun}>
+                  {!daftarTahun.includes(formData.tahun) && (
+                    <option value={formData.tahun}>
+                      {formData.tahun}
+                    </option>
+                  )}
+
+                  {daftarTahun.map((tahun) => (
+                    <option value={tahun} key={tahun}>
                       {tahun}
                     </option>
                   ))}
                 </select>
               </div>
-
-              <div className="form-group">
-                <label
-                  htmlFor="rw-setoran"
-                  className="form-label"
-                >
-                  Wilayah RW
-                </label>
-
-                <select
-                  id="rw-setoran"
-                  name="rw"
-                  value={formData.rw}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  required
-                >
-                  {DAFTAR_RW.map((rw) => (
-                    <option key={rw} value={rw}>
-                      {rw}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
-          </fieldset>
+          </section>
 
-          <fieldset className="form-section form-sampah-section">
-            <legend className="form-section-title">
-              2. Berat Sampah
-            </legend>
-
-            <p className="form-section-description">
-              Masukkan berat dalam kilogram. Gunakan angka
-              nol jika jenis sampah tidak disetorkan.
-            </p>
-
-            <div className="form-sampah-grid">
-              {JENIS_SAMPAH.map((jenis) => (
-                <div
-                  className="form-sampah-item"
-                  key={jenis.kolom}
-                  style={{
-                    '--warna-jenis': jenis.warna,
-                  }}
-                >
-                  <label
-                    htmlFor={`berat-${jenis.kolom}`}
-                    className="form-label"
-                  >
-                    {jenis.nama}
-                    <span className="form-satuan">
-                      (kg)
-                    </span>
-                  </label>
-
-                  <div className="form-berat-control">
-                    <input
-                      id={`berat-${jenis.kolom}`}
-                      className="form-input"
-                      type="number"
-                      inputMode="decimal"
-                      step="0.1"
-                      min="0"
-                      name={jenis.kolom}
-                      value={formData[jenis.kolom]}
-                      onChange={handleInputChange}
-                      placeholder="0"
-                      required
-                    />
-
-                    <span
-                      className="form-berat-satuan"
-                      aria-hidden="true"
-                    >
-                      kg
-                    </span>
-                  </div>
-
-                  <p className="form-sampah-help">
-                    {jenis.keterangan}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </fieldset>
-
-          <div
-            className="form-total-panel"
-            aria-live="polite"
-          >
-            <div>
-              <span className="form-total-caption">
-                Perkiraan Total Setoran
-              </span>
-
-              <p className="form-total-note">
-                Jumlah empat jenis sampah di atas
+          <section className="form-modern-section">
+            <div className="form-modern-section-heading">
+              <h3>Berat Berdasarkan Jenis Sampah</h3>
+              <p>
+                Masukkan angka dalam kilogram. Kosong
+                berbeda dengan nol.
               </p>
             </div>
 
-            <strong className="form-total-value">
-              {formatBerat(totalBerat)}
-              <span> kg</span>
-            </strong>
-          </div>
+            <div className="form-modern-weight-grid">
+              {JENIS_SAMPAH.map((jenis) => (
+                <div
+                  className="form-modern-field"
+                  key={jenis.kolom}
+                >
+                  <label
+                    className="form-modern-label"
+                    htmlFor={`berat-${jenis.kolom}`}
+                  >
+                    {jenis.nama} (kg) *
+                  </label>
 
-          <div className="form-submit-area">
-            <p className="form-submit-note">
-              Pastikan periode, wilayah, dan berat sampah
-              sudah benar sebelum menyimpan.
+                  <input
+                    id={`berat-${jenis.kolom}`}
+                    name={jenis.kolom}
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="form-modern-control"
+                    value={formData[jenis.kolom]}
+                    onChange={handleInputChange}
+                    placeholder="Contoh: 1.5"
+                    required
+                    disabled={inputTerkunci}
+                    aria-describedby="form-petunjuk-berat"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <p
+              id="form-petunjuk-berat"
+              className="form-modern-hint"
+            >
+              Gunakan titik (.) untuk angka desimal,
+              misalnya 1.5. Isi 0 jika tidak ada setoran.
+              Angka negatif tidak diperbolehkan.
+            </p>
+          </section>
+
+          <section
+            className="form-modern-total"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <div>
+              <p className="form-modern-total-label">
+                Total Berat
+              </p>
+
+              <p className="form-modern-total-description">
+                Jumlah otomatis dari empat jenis sampah.
+              </p>
+            </div>
+
+            <div className="form-modern-total-value">
+              {formatBerat(totalBerat)} kg
+            </div>
+          </section>
+
+          <footer className="form-modern-footer">
+            <p className="form-modern-footer-note">
+              <strong>* Wajib diisi.</strong>
+              <br />
+              Data akan ditampilkan kembali untuk diperiksa
+              sebelum dikirim ke server.
             </p>
 
             <button
               type="submit"
-              className="btn-submit"
+              className="form-modern-submit"
+              disabled={inputTerkunci}
             >
-              Simpan Data Setoran
+              {sedangMengirim
+                ? 'Menyimpan...'
+                : 'Periksa & Lanjutkan'}
             </button>
-          </div>
-        </form>
-      </section>
-
-      <style>{`
-        .form-setoran-card {
-          width: 100%;
-          min-width: 0;
-          padding: 28px;
-        }
-
-        .form-setoran-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 20px;
-          margin-bottom: 26px;
-          padding-bottom: 22px;
-          border-bottom: 1px solid #e2e8f0;
-        }
-
-        .form-setoran-heading {
-          min-width: 0;
-        }
-
-        .form-setoran-heading h2 {
-          margin: 0 0 10px;
-          color: #1e293b;
-          font-size: 23px;
-          line-height: 1.4;
-        }
-
-        .form-setoran-heading > p:last-child {
-          max-width: 640px;
-          margin: 0;
-          color: #64748b;
-          font-size: 14px;
-          line-height: 1.8;
-        }
-
-        .form-lock-button {
-          flex-shrink: 0;
-          min-height: 42px;
-          padding: 10px 12px;
-          color: #b91c1c;
-          background: #fff;
-          border: 1px solid #fecaca;
-          border-radius: 8px;
-          font-size: 12px;
-          font-weight: 700;
-          cursor: pointer;
-        }
-
-        .form-lock-button:hover {
-          background: #fef2f2;
-        }
-
-        .form-section {
-          min-width: 0;
-          margin: 0;
-          padding: 0;
-          border: 0;
-        }
-
-        .form-section-title {
-          display: block;
-          width: 100%;
-          margin: 0 0 16px;
-          padding: 0;
-          color: #1e293b;
-          font-size: 16px;
-          font-weight: 700;
-          line-height: 1.6;
-        }
-
-        .form-section-description {
-          margin: -6px 0 18px;
-          color: #64748b;
-          font-size: 13px;
-          line-height: 1.8;
-        }
-
-        .form-period-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 16px;
-        }
-
-        .form-group {
-          min-width: 0;
-          margin-bottom: 18px;
-        }
-
-        .form-label {
-          display: block;
-          margin-bottom: 8px;
-          color: #334155;
-          font-size: 13px;
-          font-weight: 700;
-          line-height: 1.6;
-        }
-
-        .form-input {
-          display: block;
-          width: 100%;
-          min-width: 0;
-          min-height: 46px;
-          padding: 11px 12px;
-          color: #1e293b;
-          background: #ffffff;
-          border: 1px solid #cbd5e1;
-          border-radius: 9px;
-          font-family: inherit;
-          font-size: 14px;
-          box-sizing: border-box;
-        }
-
-        .form-input:focus {
-          border-color: #0f766e;
-          outline: 3px solid rgba(15, 118, 110, 0.12);
-        }
-
-        .form-sampah-section {
-          margin-top: 10px;
-        }
-
-        .form-sampah-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 16px;
-        }
-
-        .form-sampah-item {
-          min-width: 0;
-          padding: 17px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-top: 3px solid var(--warna-jenis);
-          border-radius: 10px;
-        }
-
-        .form-sampah-item .form-label {
-          display: flex;
-          align-items: baseline;
-          gap: 6px;
-        }
-
-        .form-satuan {
-          color: #64748b;
-          font-size: 12px;
-          font-weight: 500;
-        }
-
-        .form-berat-control {
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-
-        .form-berat-control .form-input {
-          padding-right: 44px;
-          background: #ffffff;
-          font-size: 16px;
-          font-weight: 600;
-        }
-
-        .form-berat-satuan {
-          position: absolute;
-          right: 12px;
-          color: #64748b;
-          font-size: 12px;
-          pointer-events: none;
-        }
-
-        .form-sampah-help {
-          margin: 9px 0 0;
-          color: #64748b;
-          font-size: 11px;
-          line-height: 1.6;
-        }
-
-        .form-total-panel {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          margin-top: 24px;
-          padding: 18px;
-          background: #f0fdfa;
-          border: 1px solid #99f6e4;
-          border-radius: 12px;
-        }
-
-        .form-total-caption {
-          display: block;
-          color: #115e59;
-          font-size: 14px;
-          font-weight: 700;
-          line-height: 1.6;
-        }
-
-        .form-total-note {
-          margin: 4px 0 0;
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.6;
-        }
-
-        .form-total-value {
-          flex-shrink: 0;
-          color: #115e59;
-          font-size: 25px;
-          line-height: 1.3;
-          white-space: nowrap;
-        }
-
-        .form-total-value span {
-          font-size: 14px;
-          font-weight: 600;
-        }
-
-        .form-submit-area {
-          margin-top: 24px;
-        }
-
-        .form-submit-note {
-          margin: 0 0 14px;
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.8;
-        }
-
-        .form-submit-area .btn-submit {
-          width: 100%;
-          min-height: 48px;
-          padding: 14px 18px;
-          color: #ffffff;
-          background: #0f766e;
-          border: 0;
-          border-radius: 9px;
-          font-size: 15px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: background 0.2s ease;
-        }
-
-        .form-submit-area .btn-submit:hover {
-          background: #115e59;
-        }
-
-        @media (max-width: 767px) {
-          .form-setoran-card {
-            padding: 19px 16px;
-          }
-
-          .form-setoran-header {
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 22px;
-            padding-bottom: 18px;
-          }
-
-          .form-setoran-heading h2 {
-            font-size: 20px;
-          }
-
-          .form-setoran-heading > p:last-child {
-            font-size: 13px;
-          }
-
-          .form-lock-button {
-            width: 100%;
-          }
-
-          .form-period-grid {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 0;
-          }
-
-          .form-sampah-grid {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 12px;
-          }
-
-          .form-sampah-item {
-            padding: 14px;
-          }
-
-          .form-total-panel {
-            align-items: flex-start;
-            padding: 14px;
-          }
-
-          .form-total-caption {
-            font-size: 13px;
-          }
-
-          .form-total-note {
-            font-size: 11px;
-          }
-
-          .form-total-value {
-            font-size: 22px;
-          }
-        }
-
-        @media (min-width: 480px) and (max-width: 767px) {
-          .form-sampah-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-        }
-
-        @media (max-width: 380px) {
-          .form-setoran-card {
-            padding: 15px 12px;
-          }
-
-          .form-total-panel {
-            flex-direction: column;
-            gap: 8px;
-          }
-
-          .form-total-value {
-            align-self: flex-start;
-          }
-        }
-      `}</style>
-    </>
+          </footer>
+        </div>
+      </form>
+    </section>
   );
-};
-
-export default FormInput;
+}

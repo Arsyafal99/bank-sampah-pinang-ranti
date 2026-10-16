@@ -1,170 +1,166 @@
 import React from 'react';
 
-const Footer = () => {
+export default function Footer() {
   const tahunSekarang = new Date().getFullYear();
 
   return (
-    <>
-      <footer className="footer-bank-sampah">
-        <div className="footer-container">
-          {/* Kolom 1: Identitas Bank Sampah */}
-          <section className="footer-brand">
-            <div className="footer-brand-header">
-              <div className="footer-logo-container">
-                <img
-                  src="/jakarta%20timur.png"
-                  alt="Logo Jakarta Timur"
-                  className="footer-logo"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
+    <footer className="footer-bank-sampah">
+      <div className="footer-container">
+        {/* Identitas Bank Sampah */}
+        <section
+          className="footer-brand"
+          aria-label="Identitas Bank Sampah"
+        >
+          <div className="footer-brand-header">
+            <div
+              className="footer-logo-container"
+              aria-label="Logo wilayah"
+            >
+              <img
+                src="/jakarta%20timur.png"
+                alt="Logo Jakarta Timur"
+                className="footer-logo"
+                loading="lazy"
+                onError={(event) => {
+                  event.currentTarget.style.display = 'none';
+                }}
+              />
 
-                <span
-                  className="footer-logo-divider"
-                  aria-hidden="true"
-                />
+              <span
+                className="footer-logo-divider"
+                aria-hidden="true"
+              />
 
-                <img
-                  src="/jaya%20raya.png"
-                  alt="Logo Jaya Raya"
-                  className="footer-logo"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </div>
-
-              <div className="footer-brand-title">
-                <span className="footer-brand-label">
-                  KELURAHAN PINANG RANTI
-                </span>
-
-                <h2>
-                  Bank Sampah
-                  <span>Pinang Ranti</span>
-                </h2>
-              </div>
+              <img
+                src="/jaya%20raya.png"
+                alt="Logo Jaya Raya"
+                className="footer-logo"
+                loading="lazy"
+                onError={(event) => {
+                  event.currentTarget.style.display = 'none';
+                }}
+              />
             </div>
 
-            <p className="footer-description">
-              Sistem informasi untuk pencatatan dan
-              rekapitulasi data setoran sampah warga
-              di lingkungan Kelurahan Pinang Ranti.
-            </p>
-          </section>
-
-          {/* Kolom 2: Alamat dan Kontak */}
-          <section className="footer-section">
-            <div className="footer-heading">
-              <span
-                className="footer-heading-icon"
-                aria-hidden="true"
-              >
-                📍
+            <div className="footer-brand-title">
+              <span className="footer-brand-label">
+                KELURAHAN PINANG RANTI
               </span>
 
-              <h3>Alamat Kantor Kelurahan</h3>
+              <h2>
+                Bank Sampah
+                <span>Pinang Ranti</span>
+              </h2>
             </div>
-
-            <address className="footer-address">
-              Jl. SMA N 48 Jakarta, RT.14/RW.1,
-              Pinang Ranti, Kecamatan Makasar,
-              Kota Administrasi Jakarta Timur,
-              DKI Jakarta 13560.
-            </address>
-
-            <div className="footer-contact">
-              <span aria-hidden="true">☎️</span>
-
-              <div>
-                <span className="footer-contact-label">
-                  Nomor telepon
-                </span>
-
-                <strong>(021) 8001403</strong>
-              </div>
-            </div>
-          </section>
-
-          {/* Kolom 3: Cakupan Sistem */}
-          <section className="footer-section">
-            <div className="footer-heading">
-              <span
-                className="footer-heading-icon"
-                aria-hidden="true"
-              >
-                ♻️
-              </span>
-
-              <h3>Cakupan Sistem</h3>
-            </div>
-
-            <ul className="footer-list">
-              <li>
-                <span aria-hidden="true">✓</span>
-                <span>Wilayah RW 01 hingga RW 05</span>
-              </li>
-
-              <li>
-                <span aria-hidden="true">✓</span>
-                <span>Pencatatan setoran sampah</span>
-              </li>
-
-              <li>
-                <span aria-hidden="true">✓</span>
-                <span>Rekapitulasi data bulanan dan tahunan</span>
-              </li>
-
-              <li>
-                <span aria-hidden="true">✓</span>
-                <span>Grafik perbandingan setoran antar-RW</span>
-              </li>
-            </ul>
-          </section>
-        </div>
-
-        {/* Bagian bawah footer */}
-        <div className="footer-bottom-container">
-          <div className="footer-bottom">
-            <p className="footer-copyright">
-              © {tahunSekarang} Pemerintah Kelurahan Pinang
-              Ranti. Hak cipta dilindungi.
-            </p>
-
-            <p className="footer-developer">
-              Dikembangkan oleh
-              <strong>Arsyaf Dwi Nur Prasetyo</strong>
-            </p>
           </div>
+
+          <p className="footer-description">
+            Sistem informasi pencatatan dan rekapitulasi setoran
+            sampah di lingkungan Kelurahan Pinang Ranti.
+          </p>
+        </section>
+
+        {/* Alamat dan Kontak */}
+        <section
+          className="footer-section"
+          aria-labelledby="footer-alamat"
+        >
+          <h3
+            id="footer-alamat"
+            className="footer-heading"
+          >
+            Alamat dan Kontak
+          </h3>
+
+          <address className="footer-address">
+            Jl. SMA N 48 Jakarta, RT.14/RW.1, Pinang Ranti,
+            Kecamatan Makasar, Kota Administrasi Jakarta Timur,
+            DKI Jakarta 13560.
+          </address>
+
+          <div className="footer-contact">
+            <span className="footer-contact-label">
+              Nomor telepon
+            </span>
+
+            <a
+              className="footer-contact-link"
+              href="tel:+62218001403"
+            >
+              (021) 8001403
+            </a>
+          </div>
+        </section>
+
+        {/* Cakupan Sistem */}
+        <section
+          className="footer-section"
+          aria-labelledby="footer-cakupan"
+        >
+          <h3
+            id="footer-cakupan"
+            className="footer-heading"
+          >
+            Cakupan Sistem
+          </h3>
+
+          <p className="footer-scope-intro">
+            Wilayah yang tercakup dalam sistem:
+          </p>
+
+          <p className="footer-rw-list">
+            RW 001 · RW 002 · RW 003 · RW 004 · RW 005
+          </p>
+
+          <div className="footer-features">
+            <p>Pencatatan setoran sampah</p>
+            <p>Rekapitulasi bulanan dan tahunan</p>
+            <p>Grafik perbandingan setoran antar-RW</p>
+          </div>
+        </section>
+      </div>
+
+      {/* Bagian bawah */}
+      <div className="footer-bottom-container">
+        <div className="footer-bottom">
+          <p className="footer-copyright">
+            © {tahunSekarang} Bank Sampah Kelurahan Pinang Ranti
+          </p>
+
+          <p className="footer-developer">
+            Dikembangkan oleh{' '}
+            <strong>Arsyaf Dwi Nur Prasetyo</strong>
+          </p>
         </div>
-      </footer>
+      </div>
 
       <style>{`
+        .footer-bank-sampah,
+        .footer-bank-sampah * {
+          box-sizing: border-box;
+        }
+
         .footer-bank-sampah {
           width: 100%;
           min-width: 0;
-          margin-top: auto;
+          margin-top: 30px;
+          color: #1e293b;
           background: #ffffff;
           border-top: 3px solid #0f766e;
           font-family: 'Inter', Arial, sans-serif;
-          color: #1e293b;
-          box-sizing: border-box;
         }
 
         .footer-container {
           display: grid;
           grid-template-columns:
-            minmax(0, 1.2fr)
+            minmax(0, 1.18fr)
             minmax(0, 1fr)
             minmax(0, 1fr);
-
-          gap: 36px;
+          gap: 30px;
           width: 100%;
-          max-width: 1200px;
+          max-width: 1220px;
           margin: 0 auto;
-          padding: 42px 24px 36px;
-          box-sizing: border-box;
+          padding: 32px 24px 28px;
         }
 
         .footer-brand,
@@ -175,37 +171,36 @@ const Footer = () => {
         .footer-brand-header {
           display: flex;
           align-items: center;
-          gap: 15px;
+          gap: 13px;
           min-width: 0;
-          margin-bottom: 18px;
+          margin-bottom: 14px;
         }
 
         .footer-logo-container {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
-          flex-shrink: 0;
-          padding: 9px 11px;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
+          flex: 0 0 auto;
+          gap: 8px;
+          min-height: 72px;
+          padding: 8px 10px;
+          background: #fbfdfc;
+          border: 1px solid #e1ebe5;
           border-radius: 12px;
-          box-shadow: 0 2px 7px rgba(15, 23, 42, 0.04);
         }
 
         .footer-logo {
           display: block;
-          width: 38px;
-          height: 48px;
+          width: 40px;
+          height: 52px;
           object-fit: contain;
         }
 
         .footer-logo-divider {
-          display: block;
           width: 1px;
-          height: 34px;
-          flex-shrink: 0;
-          background: #cbd5e1;
+          height: 36px;
+          flex: 0 0 auto;
+          background: #d7e3dc;
         }
 
         .footer-brand-title {
@@ -214,20 +209,20 @@ const Footer = () => {
 
         .footer-brand-label {
           display: block;
-          margin-bottom: 5px;
+          margin-bottom: 4px;
           color: #0f766e;
-          font-size: 9px;
+          font-size: 10px;
           font-weight: 800;
-          letter-spacing: 0.6px;
-          line-height: 1.7;
+          letter-spacing: .45px;
+          line-height: 1.6;
         }
 
         .footer-brand-title h2 {
           margin: 0;
           color: #115e59;
-          font-size: 17px;
+          font-size: 19px;
           font-weight: 800;
-          line-height: 1.4;
+          line-height: 1.35;
           overflow-wrap: anywhere;
         }
 
@@ -236,120 +231,91 @@ const Footer = () => {
         }
 
         .footer-description {
+          max-width: 390px;
           margin: 0;
           color: #64748b;
-          font-size: 12px;
-          line-height: 1.9;
-          overflow-wrap: anywhere;
-        }
-
-        .footer-section {
-          padding-top: 5px;
+          font-size: 13px;
+          line-height: 1.8;
         }
 
         .footer-heading {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 15px;
-        }
-
-        .footer-heading-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 35px;
-          height: 35px;
-          flex-shrink: 0;
-          background: #f0fdfa;
-          border: 1px solid #ccfbf1;
-          border-radius: 9px;
-          font-size: 17px;
-        }
-
-        .footer-heading h3 {
-          margin: 0;
+          margin: 3px 0 13px;
           color: #1e293b;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 800;
-          line-height: 1.6;
+          line-height: 1.5;
           overflow-wrap: anywhere;
         }
 
         .footer-address {
           margin: 0;
           color: #64748b;
-          font-size: 12px;
-          line-height: 1.9;
+          font-size: 13px;
+          line-height: 1.8;
           font-style: normal;
           overflow-wrap: anywhere;
         }
 
         .footer-contact {
           display: flex;
+          flex-direction: column;
           align-items: flex-start;
-          gap: 10px;
-          margin-top: 17px;
-          padding-top: 14px;
-          border-top: 1px solid #e2e8f0;
-        }
-
-        .footer-contact > span {
-          font-size: 17px;
-          line-height: 1.5;
+          gap: 3px;
+          margin-top: 14px;
+          padding-top: 12px;
+          border-top: 1px solid #e5ece8;
         }
 
         .footer-contact-label {
-          display: block;
-          margin-bottom: 3px;
           color: #64748b;
-          font-size: 11px;
-          line-height: 1.6;
+          font-size: 12px;
+          line-height: 1.5;
         }
 
-        .footer-contact strong {
-          display: block;
+        .footer-contact-link {
+          color: #115e59;
+          font-size: 14px;
+          font-weight: 800;
+          line-height: 1.5;
+          text-decoration: none;
+        }
+
+        .footer-contact-link:hover {
+          text-decoration: underline;
+        }
+
+        .footer-scope-intro {
+          margin: 0 0 8px;
+          color: #64748b;
+          font-size: 13px;
+          line-height: 1.65;
+        }
+
+        .footer-rw-list {
+          margin: 0 0 12px;
           color: #115e59;
           font-size: 13px;
-          line-height: 1.6;
+          font-weight: 800;
+          line-height: 1.9;
           overflow-wrap: anywhere;
         }
 
-        .footer-list {
+        .footer-features {
           display: grid;
-          gap: 12px;
+          gap: 7px;
+        }
+
+        .footer-features p {
           margin: 0;
-          padding: 0;
-          list-style: none;
-        }
-
-        .footer-list li {
-          display: flex;
-          align-items: flex-start;
-          gap: 9px;
           color: #64748b;
-          font-size: 12px;
-          line-height: 1.8;
-        }
-
-        .footer-list li > span:first-child {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 19px;
-          height: 19px;
-          flex-shrink: 0;
-          margin-top: 1px;
-          color: #0f766e;
-          background: #ccfbf1;
-          border-radius: 50%;
-          font-size: 11px;
-          font-weight: 800;
+          font-size: 13px;
+          line-height: 1.7;
+          overflow-wrap: anywhere;
         }
 
         .footer-bottom-container {
           border-top: 1px solid #e2e8f0;
-          background: #f8fafc;
+          background: #f7faf8;
         }
 
         .footer-bottom {
@@ -357,12 +323,11 @@ const Footer = () => {
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
-          gap: 14px;
+          gap: 8px 18px;
           width: 100%;
-          max-width: 1200px;
+          max-width: 1220px;
           margin: 0 auto;
-          padding: 18px 24px;
-          box-sizing: border-box;
+          padding: 14px 24px;
         }
 
         .footer-copyright,
@@ -370,15 +335,8 @@ const Footer = () => {
           margin: 0;
           color: #64748b;
           font-size: 11px;
-          line-height: 1.8;
+          line-height: 1.7;
           overflow-wrap: anywhere;
-        }
-
-        .footer-developer {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: baseline;
-          gap: 5px;
         }
 
         .footer-developer strong {
@@ -387,122 +345,128 @@ const Footer = () => {
         }
 
         /* Tablet */
-        @media (min-width: 768px) and (max-width: 1023px) {
+        @media (min-width: 641px) and (max-width: 1023px) {
           .footer-container {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 30px;
-            padding: 34px 22px;
+            gap: 24px;
+            padding: 30px 22px 26px;
           }
 
           .footer-brand {
             grid-column: 1 / -1;
           }
 
-          .footer-brand-header {
-            justify-content: flex-start;
-          }
-
           .footer-description {
             max-width: 650px;
-          }
-
-          .footer-bottom {
-            padding: 17px 22px;
           }
         }
 
         /* HP */
-        @media (max-width: 767px) {
+        @media (max-width: 640px) {
+          .footer-bank-sampah {
+            margin-top: 24px;
+          }
+
           .footer-container {
             grid-template-columns: minmax(0, 1fr);
-            gap: 25px;
-            padding: 28px 18px;
+            gap: 18px;
+            padding: 23px 16px 20px;
           }
 
           .footer-brand-header {
             align-items: center;
-            gap: 13px;
+            gap: 11px;
+            margin-bottom: 10px;
           }
 
           .footer-logo-container {
-            gap: 8px;
-            padding: 8px 9px;
+            gap: 6px;
+            min-height: 67px;
+            padding: 6px 8px;
           }
 
           .footer-logo {
-            width: 33px;
-            height: 43px;
+            width: 36px;
+            height: 49px;
           }
 
           .footer-logo-divider {
-            height: 31px;
-          }
-
-          .footer-brand-title h2 {
-            font-size: 16px;
+            height: 33px;
           }
 
           .footer-brand-label {
             font-size: 9px;
-          }
-
-          .footer-description,
-          .footer-address,
-          .footer-list li {
-            font-size: 12px;
-          }
-
-          .footer-section {
-            padding-top: 19px;
-            border-top: 1px solid #e2e8f0;
-          }
-
-          .footer-heading {
-            margin-bottom: 12px;
-          }
-
-          .footer-contact {
-            margin-top: 13px;
-            padding-top: 12px;
-          }
-
-          .footer-bottom {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 9px;
-            padding: 16px 18px;
-          }
-
-          .footer-copyright,
-          .footer-developer {
-            font-size: 11px;
-          }
-        }
-
-        /* HP kecil */
-        @media (max-width: 380px) {
-          .footer-container {
-            padding: 24px 13px;
-            gap: 22px;
-          }
-
-          .footer-brand-header {
-            align-items: flex-start;
-            flex-direction: column;
-            gap: 12px;
+            letter-spacing: .15px;
           }
 
           .footer-brand-title h2 {
             font-size: 17px;
           }
 
+          .footer-description,
+          .footer-address,
+          .footer-scope-intro,
+          .footer-features p {
+            font-size: 12px;
+          }
+
+          .footer-section {
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+          }
+
+          .footer-heading {
+            margin-top: 0;
+            margin-bottom: 9px;
+            font-size: 14px;
+          }
+
+          .footer-rw-list {
+            font-size: 12px;
+          }
+
+          .footer-features {
+            gap: 5px;
+          }
+
           .footer-bottom {
-            padding: 14px 13px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+            padding: 12px 16px;
+          }
+        }
+
+        /* HP sangat kecil */
+        @media (max-width: 360px) {
+          .footer-container {
+            padding-right: 12px;
+            padding-left: 12px;
+          }
+
+          .footer-brand-header {
+            gap: 8px;
+          }
+
+          .footer-logo-container {
+            gap: 4px;
+            padding: 5px 6px;
+          }
+
+          .footer-logo {
+            width: 32px;
+            height: 45px;
+          }
+
+          .footer-brand-label {
+            font-size: 8px;
+          }
+
+          .footer-brand-title h2 {
+            font-size: 16px;
           }
         }
       `}</style>
-    </>
+    </footer>
   );
-};
-
-export default Footer;
+}
